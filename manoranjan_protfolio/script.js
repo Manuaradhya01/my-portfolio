@@ -426,5 +426,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
+  /* --------------------------------------------------------------------------
+     RESUME DOWNLOAD — Bounce animation on click
+     -------------------------------------------------------------------------- */
+  const resumeBtn = document.getElementById('resume-download');
+  if (resumeBtn) {
+    resumeBtn.addEventListener('click', function () {
+      // Trigger downloading state
+      this.classList.add('downloading');
+      // Remove after animation completes, re-enable link
+      setTimeout(() => {
+        this.classList.remove('downloading');
+      }, 900);
+    });
+  }
+
   console.log('Manoranjan L Portfolio engine initialized successfully.');
 });
