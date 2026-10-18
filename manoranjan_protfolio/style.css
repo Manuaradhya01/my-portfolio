@@ -358,6 +358,41 @@ body.cursor-hover .cursor-dot {
   width: 100%;
 }
 
+/* Resume Download Link — Distinct accent treatment */
+.nav-link-resume {
+  color: var(--ink-primary);
+  border: 1.5px solid var(--ink-primary);
+  border-radius: 2px;
+  padding: 0.3rem 0.65rem;
+  letter-spacing: 0.14em;
+  position: relative;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+.nav-link-resume .nav-idx {
+  color: var(--ink-secondary);
+}
+.nav-link-resume::after {
+  display: none; /* disable underline animation for this one */
+}
+.nav-link-resume:hover {
+  background-color: var(--ink-primary);
+  color: var(--bg-paper-light);
+}
+.nav-link-resume:hover .nav-idx {
+  color: var(--bg-paper-light);
+}
+
+/* Mobile Resume item */
+.mobile-nav-resume {
+  border-top: 1.5px solid var(--rule-strong);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+}
+.mobile-nav-resume .m-text {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
 /* Mobile Menu Toggle Button */
 .menu-toggle-btn {
   display: none;
