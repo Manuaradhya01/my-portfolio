@@ -1,0 +1,9 @@
+# macOS metadata
+__MACOSX/
+.DS_Store
+
+# VS Code settings (optional – remove line below to include them)
+.vscode/
+
+# Node modules (if any ever added)
+node_modules/

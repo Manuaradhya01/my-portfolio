@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manoranjan L — Computer Science & Engineering (Data Science) student, Backend Developer, and AI enthusiast at MVJ College of Engineering, Bengaluru. Creative 3D-inspired editorial portfolio.">
+  <meta name="author" content="Manoranjan L">
+  <meta name="keywords" content="Manoranjan L, Portfolio, Data Science, Backend Development, AI, Python, Machine Learning, MVJ College of Engineering, Bengaluru">
+  <meta name="theme-color" content="#f6f4ed">
+
+  <title>MANORANJAN L — Portfolio · Computer Science &amp; Data Science</title>
+
+  <!-- Favicon: Minimal Monogram -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='50%25' y='68%25' fill='%23f5f2eb' font-family='sans-serif' font-weight='900' font-size='16' text-anchor='middle'%3EML%3C/text%3E%3C/svg%3E">
+
+  <!-- Typography: Syne (Editorial Display), Plus Jakarta Sans (Body), JetBrains Mono (Technical Metadata), Permanent Marker (Artistic Brush) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Permanent+Marker&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="editorial-paper">
+
+  <!-- SVG Texture Filters for Authentic Ink & Paper Grain -->
+  <svg class="svg-filters" aria-hidden="true" style="position: absolute; width: 0; height: 0; pointer-events: none;">
+    <defs>
+      <!-- Charcoal / Dry-brush edge distress filter -->
+      <filter id="ink-bleed" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <!-- Paper grain texture filter -->
+      <filter id="paper-texture">
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="matrix" values="0 0 0 0 0.1   0 0 0 0 0.1   0 0 0 0 0.1  0 0 0 0.045 0" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Ambient Paper Textures & Creases Overlay -->
+  <div class="paper-crease paper-crease-left" aria-hidden="true"></div>
+  <div class="paper-crease paper-crease-right" aria-hidden="true"></div>
+  <div class="paper-grid-bg" id="paper-grid" aria-hidden="true"></div>
+  <div class="paper-noise-overlay" aria-hidden="true"></div>
+
+  <!-- Interactive Lightweight Ambient Dust Canvas -->
+  <canvas id="ambient-canvas" class="ambient-canvas" aria-hidden="true"></canvas>
+
+  <!-- Custom Cursor Elements (Desktop only, auto-disabled on touch/reduced-motion) -->
+  <div id="cursor-dot" class="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" class="cursor-ring" aria-hidden="true"></div>
+
+  <!-- Reading / Scroll Progress Bar -->
+  <div id="scroll-progress" class="scroll-progress-bar" aria-hidden="true"></div>
+
+  <!-- ==========================================================================
+       TOP BAR / HEADER (Inspired by Reference Image)
+  ========================================================================== -->
+  <header class="editorial-header" id="site-header">
+    <div class="header-inner">
+      
+      <!-- Left: Role Tag -->
+      <div class="header-left">
+        <span class="role-badge">CS STUDENT / DATA SCIENCE</span>
+      </div>
+
+      <!-- Center: Selected Works & Timeline -->
+      <div class="header-center">
+        <span class="center-years">2025–2026</span>
+        <span class="center-caption">SELECTED WORKS</span>
+      </div>
+
+      <!-- Right: Desktop Navigation + Mobile Menu Toggle -->
+      <div class="header-right">
+        <nav class="desktop-nav" aria-label="Main Navigation">
+          <ul class="nav-list">
+            <li><a href="#work" class="nav-link"><span class="nav-idx">01.</span>WORK</a></li>
+            <li><a href="#about" class="nav-link"><span class="nav-idx">02.</span>ABOUT</a></li>
+            <li><a href="#skills" class="nav-link"><span class="nav-idx">03.</span>SKILLS</a></li>
+            <li><a href="#leadership" class="nav-link"><span class="nav-idx">04.</span>LEADERSHIP</a></li>
+            <li><a href="#contact" class="nav-link"><span class="nav-idx">05.</span>CONTACT</a></li>
+          </ul>
+        </nav>
+
+        <!-- Compact Mobile Menu Button -->
+        <button id="menu-toggle" class="menu-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav">
+          <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+          </span>
+          <span class="menu-label">MENU</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Navigation -->
+  <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
+  <div id="mobile-nav" class="mobile-nav-drawer" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <span class="drawer-title">MANORANJAN L · NAVIGATION</span>
+      <button id="menu-close" class="menu-close-btn" aria-label="Close menu">&times;</button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="#hero" class="mobile-nav-link"><span class="m-num">00</span><span class="m-text">INDEX / HERO</span></a></li>
+      <li><a href="#work" class="mobile-nav-link"><span class="m-num">01</span><span class="m-text">SELECTED WORK</span></a></li>
+      <li><a href="#about" class="mobile-nav-link"><span class="m-num">02</span><span class="m-text">ABOUT PROFILE</span></a></li>
+      <li><a href="#skills" class="mobile-nav-link"><span class="m-num">03</span><span class="m-text">TECHNICAL SKILLS</span></a></li>
+      <li><a href="#leadership" class="mobile-nav-link"><span class="m-num">04</span><span class="m-text">LEADERSHIP &amp; INITIATIVE</span></a></li>
+      <li><a href="#contact" class="mobile-nav-link"><span class="m-num">05</span><span class="m-text">GET IN TOUCH</span></a></li>
+    </ul>
+    <div class="mobile-drawer-footer">
+      <div class="m-meta">MVJ COLLEGE OF ENGINEERING</div>
+      <div class="m-email">manuaradhya2326@gmail.com</div>
+    </div>
+  </div>
+
+  <main id="main-content">
+
+    <!-- ==========================================================================
+         HERO SECTION (Exact visual translation of reference image)
+    ========================================================================== -->
+    <section class="hero-section" id="hero" aria-label="Introduction & Overview">
+      
+      <!-- Top Metadata Strip of Hero (Coordinates & Status) -->
+      <div class="hero-meta-top">
+        <span class="geo-tag"><span class="geo-bullet">●</span> 12.9716° N, 77.5946° E · BENGALURU, IN</span>
+        <span class="spec-tag">MVJ COLLEGE OF ENGINEERING · DEPT OF CSE (DS)</span>
+      </div>
+
+      <!-- 3D Perspective Interactive Stage -->
+      <div class="hero-stage-wrapper" id="hero-stage">
+        <div class="hero-3d-card" id="hero-card">
+          
+          <!-- Small Category Lead-in -->
+          <div class="hero-category">
+            <span class="pill-outline">COMPUTER SCIENCE · DATA SCIENCE</span>
+          </div>
+
+          <!-- Hero Identity Lockup: Profile Image Frame + Name -->
+          <div class="hero-identity-lockup">
+            
+            <!-- Creative Rectangular Editorial Photo Frame -->
+            <div class="hero-photo-wrapper" id="hero-photo-card" aria-label="Manoranjan L Profile Portrait">
+              <div class="hero-photo-frame">
+                <span class="photo-corner c-tl" aria-hidden="true">+</span>
+                <span class="photo-corner c-tr" aria-hidden="true">+</span>
+                <span class="photo-corner c-bl" aria-hidden="true">+</span>
+                <span class="photo-corner c-br" aria-hidden="true">+</span>
+                
+                <div class="hero-photo-container">
+                  <img 
+                    src="images/profile.jpg" 
+                    alt="Portrait of Manoranjan L" 
+                    class="hero-photo-img"
+                    loading="eager"
+                    width="110"
+                    height="130"
+                    onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                  >
+                  <!-- Graceful fallback if image is missing -->
+                  <div class="photo-fallback" style="display: none;" aria-label="Portrait of Manoranjan L fallback">
+                    <span class="fallback-monogram">ML</span>
+                    <span class="fallback-caption">MANORANJAN L</span>
+                  </div>
+                  <div class="photo-grain-overlay" aria-hidden="true"></div>
+                </div>
+
+                <div class="photo-caption-bar" aria-hidden="true">
+                  <span class="photo-badge">PORTRAIT // 2026</span>
+                  <span class="photo-loc">BENGALURU</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Name Sub-Headline -->
+            <div class="hero-name-content">
+              <h2 class="hero-name">
+                <span class="name-light">MANORANJAN</span>
+                <span class="name-bold">L</span><span class="apostrophe-s">’s</span>
+              </h2>
+              <div class="hero-role-caption">
+                <span class="role-caption-text">DATA SCIENCE &amp; BACKEND DEVELOPER</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Centerpiece: Artistic 3D Layered Title -->
+          <div class="artistic-title-container" aria-label="Portfolio">
+            
+            <!-- Layer 1: Oversized 3D Extruded Outline Lettering (Behind) -->
+            <div class="title-outline-depth" aria-hidden="true" data-depth="0.15">
+              <span class="outline-letter">P</span>
+              <span class="outline-letter">O</span>
+              <span class="outline-letter">R</span>
+              <span class="outline-letter">T</span>
+              <span class="outline-letter">F</span>
+              <span class="outline-letter">O</span>
+              <span class="outline-letter">L</span>
+              <span class="outline-letter">I</span>
+              <span class="outline-letter">O</span>
+            </div>
+
+            <!-- Layer 2: Hand-Crafted Dry-Brush Artistic Main Title (Front) -->
+            <div class="title-brush-foreground" data-depth="0.35">
+              <h1 class="artistic-heading">
+                <span class="brush-word">
+                  <span class="char p-char">P</span>
+                  <span class="char o-char">o</span>
+                  <span class="char r-char">R</span>
+                  <span class="char t-char">T</span>
+                  <span class="char-space">&nbsp;</span>
+                  <span class="char f-char">f</span>
+                  <span class="char o2-char">o</span>
+                  <span class="char l-char">L</span>
+                  <span class="char i-char">i</span>
+                  <span class="char o3-char">O</span>
+                </span>
+              </h1>
+            </div>
+
+            <!-- Layer 3: Charcoal Underline Brush Stroke -->
+            <div class="brush-stroke-underline" aria-hidden="true" data-depth="0.25">
+              <svg class="underline-svg" viewBox="0 0 900 48" fill="none" preserveAspectRatio="none">
+                <path d="M4 24 C 180 18, 380 28, 560 21 C 700 16, 820 23, 896 22 C 860 30, 710 33, 530 31 C 340 33, 170 34, 4 24 Z" fill="currentColor"/>
+                <path d="M12 28 C 140 25, 310 29, 490 27 C 640 25, 780 27, 882 25" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M40 33 C 210 32, 420 34, 610 33 C 740 32, 830 33, 868 31" stroke="currentColor" stroke-width="1.5" stroke-dasharray="12 6" opacity="0.6"/>
+              </svg>
+            </div>
+
+          </div>
+
+          <!-- Short Description -->
+          <p class="hero-description">
+            Building intelligent applications, exploring data, and turning ideas into useful technology.
+          </p>
+
+          <!-- Supporting Metadata Grid -->
+          <div class="hero-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">LOCATION</span>
+              <span class="meta-value">Bengaluru, Karnataka, India</span>
+            </div>
+            <div class="meta-divider-v" aria-hidden="true"></div>
+            <div class="meta-item">
+              <span class="meta-label">PROGRAM</span>
+              <span class="meta-value">Computer Science &amp; Engineering — Data Science</span>
+            </div>
+            <div class="meta-divider-v" aria-hidden="true"></div>
+            <div class="meta-item">
+              <span class="meta-label">TIMELINE</span>
+              <span class="meta-value">Expected graduation: 2028 · CGPA 8.0</span>
+            </div>
+          </div>
+
+          <!-- Hero Action Buttons -->
+          <div class="hero-actions">
+            <a href="#work" class="btn btn-primary" id="btn-explore-work">
+              <span class="btn-text">EXPLORE WORK</span>
+              <span class="btn-arrow" aria-hidden="true">↓</span>
+            </a>
+            <a href="#about" class="btn btn-secondary" id="btn-about-me">
+              <span class="btn-text">ABOUT ME</span>
+              <span class="btn-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Hero Bottom Strip (Email & Coordinates as in reference image) -->
+      <div class="hero-bottom-strip">
+        <div class="strip-left">
+          <a href="mailto:manuaradhya2326@gmail.com" class="strip-link">
+            <span class="strip-icon" aria-hidden="true">✉</span>
+            <span class="strip-text">manuaradhya2326@gmail.com</span>
+          </a>
+        </div>
+        <div class="strip-center">
+          <a href="#work" class="scroll-cue" aria-label="Scroll to projects">
+            <span class="cue-indicator"></span>
+            <span class="cue-label">SCROLL DOWN</span>
+          </a>
+        </div>
+        <div class="strip-right">
+          <a href="tel:+918660322599" class="strip-link">
+            <span class="strip-icon" aria-hidden="true">☎</span>
+            <span class="strip-text">+91 86603 22599</span>
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==========================================================================
+         SECTION 01: SELECTED PROJECTS (Editorial Rows with 3D Depth)
+    ========================================================================== -->
+    <section class="editorial-section projects-section" id="work" aria-label="Selected Projects">
+      
+      <!-- Section Header -->
+      <div class="section-header-row">
+        <div class="section-num-col">
+          <span class="sec-index">01</span>
+          <span class="sec-slash">/</span>
+          <span class="sec-total">05</span>
+        </div>
+        <div class="section-title-col">
+          <span class="sec-pre">FEATURED INGENUITY</span>
+          <h2 class="sec-heading">SELECTED PROJECTS</h2>
+        </div>
+        <div class="section-meta-col">
+          <span class="sec-tag">MACHINE LEARNING · BACKEND ARCHITECTURES · DATA SYSTEMS</span>
+        </div>
+      </div>
+
+      <!-- Project Rows Container -->
+      <div class="projects-list">
+
+        <!-- PROJECT 01: Plant Disease Detector Application -->
+        <article class="project-editorial-row" data-project="01" id="project-01">
+          <div class="project-3d-tilt-box">
+            
+            <div class="proj-header-line">
+              <div class="proj-id-badge">
+                <span class="proj-num">01</span>
+                <span class="proj-dot">·</span>
+                <span class="proj-category">MACHINE LEARNING / COMPUTER VISION</span>
+              </div>
+              <div class="proj-status-badge">
+                <span class="status-live-dot"></span>
+                <span>DEPLOYED WEB APP</span>
+              </div>
+            </div>
+
+            <div class="proj-main-grid">
+              <!-- Left: Project Typography & Narrative -->
+              <div class="proj-content-col">
+                <h3 class="proj-title">Plant Disease Detector Application</h3>
+                
+                <p class="proj-desc">
+                  Built a web-based application that classifies plant diseases from leaf images using machine learning models trained on Kaggle datasets. Developed an accessible interface with Python and Streamlit for prediction and analysis.
+                </p>
+
+                <!-- Technical highlights from resume -->
+                <div class="proj-specs-block">
+                  <div class="spec-row">
+                    <span class="spec-key">PRIMARY FOCUS:</span>
+                    <span class="spec-val">Leaf Image Disease Classification</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">DATASET SOURCE:</span>
+                    <span class="spec-val">Curated Kaggle Plant Village Repositories</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">INTERFACE:</span>
+                    <span class="spec-val">Interactive Streamlit Dashboard with instant diagnosis</span>
+                  </div>
+                </div>
+
+                <!-- Technologies (exact from resume) -->
+                <div class="proj-tech-stack">
+                  <span class="tech-pill">Python</span>
+                  <span class="tech-pill">Streamlit</span>
+                  <span class="tech-pill">Machine Learning</span>
+                  <span class="tech-pill">Image Classification</span>
+                  <span class="tech-pill">Kaggle Datasets</span>
+                </div>
+              </div>
+
+              <!-- Right: 3D Interactive Visual Schematic (No fake URLs) -->
+              <div class="proj-visual-col">
+                <div class="schematic-card" aria-hidden="true">
+                  <div class="schematic-top">
+                    <span class="schem-label">MODEL ARCHITECTURE // PIPELINE</span>
+                    <span class="schem-ver">v1.2</span>
+                  </div>
+                  <div class="schematic-diagram leaf-diagram">
+                    <div class="node-flow">
+                      <div class="flow-step">
+                        <div class="step-icon">🍃</div>
+                        <span class="step-title">Leaf Image Input</span>
+                        <span class="step-sub">Preprocessed RGB</span>
+                      </div>
+                      <div class="flow-arrow">→</div>
+                      <div class="flow-step highlight">
+                        <div class="step-icon">⚙️</div>
+                        <span class="step-title">ML Classifier</span>
+                        <span class="step-sub">Kaggle Trained</span>
+                      </div>
+                      <div class="flow-arrow">→</div>
+                      <div class="flow-step">
+                        <div class="step-icon">📊</div>
+                        <span class="step-title">Streamlit UI</span>
+                        <span class="step-sub">Diagnosis &amp; Care</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="schematic-footer">
+                    <span class="stat-item">METRIC: Accurate Leaf Health Assessment</span>
+                    <span class="stat-status">STABLE RUNTIME</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- PROJECT 02: Hyperlocal Monsoon Detector -->
+        <article class="project-editorial-row" data-project="02" id="project-02">
+          <div class="project-3d-tilt-box">
+            
+            <div class="proj-header-line">
+              <div class="proj-id-badge">
+                <span class="proj-num">02</span>
+                <span class="proj-dot">·</span>
+                <span class="proj-category">WEATHER ANALYTICS / BACKEND SYSTEMS</span>
+              </div>
+              <div class="proj-status-badge">
+                <span class="status-live-dot"></span>
+                <span>REAL-TIME ENGINE</span>
+              </div>
+            </div>
+
+            <div class="proj-main-grid">
+              <div class="proj-content-col">
+                <h3 class="proj-title">Hyperlocal Monsoon Detector</h3>
+                
+                <p class="proj-desc">
+                  Developed a hyperlocal weather tracking tool designed to analyze and detect localized monsoon patterns, focusing on backend data processing and localized weather reporting.
+                </p>
+
+                <div class="proj-specs-block">
+                  <div class="spec-row">
+                    <span class="spec-key">PRIMARY FOCUS:</span>
+                    <span class="spec-val">Micro-Climate Monsoon Pattern Detection</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">CORE ENGINE:</span>
+                    <span class="spec-val">Low-latency backend pipelines for localized atmospheric anomalies</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">OUTPUT:</span>
+                    <span class="spec-val">Precise ward/neighborhood level precipitation alerts</span>
+                  </div>
+                </div>
+
+                <div class="proj-tech-stack">
+                  <span class="tech-pill">Python</span>
+                  <span class="tech-pill">Backend Data Processing</span>
+                  <span class="tech-pill">Weather Tracking</span>
+                  <span class="tech-pill">Pattern Analytics</span>
+                  <span class="tech-pill">Localized Reporting</span>
+                </div>
+              </div>
+
+              <div class="proj-visual-col">
+                <div class="schematic-card" aria-hidden="true">
+                  <div class="schematic-top">
+                    <span class="schem-label">MICRO-PRECIPITATION RADAR // BENGALURU</span>
+                    <span class="schem-ver">LIVE SYNC</span>
+                  </div>
+                  <div class="schematic-diagram weather-diagram">
+                    <div class="weather-radar-grid">
+                      <div class="radar-circle circle-1"></div>
+                      <div class="radar-circle circle-2"></div>
+                      <div class="radar-sweep"></div>
+                      <div class="radar-point p1" style="top:32%; left:45%;"></div>
+                      <div class="radar-point p2" style="top:58%; left:62%;"></div>
+                      <div class="radar-point p3" style="top:42%; left:28%;"></div>
+                      <div class="radar-caption">HYPERLOCAL CELL IDENTIFIED: HIGH DENSITY</div>
+                    </div>
+                  </div>
+                  <div class="schematic-footer">
+                    <span class="stat-item">RESOLUTION: Hyperlocal Micro-Cluster</span>
+                    <span class="stat-status">CONTINUOUS FEED</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- PROJECT 03: Lost and Found App -->
+        <article class="project-editorial-row" data-project="03" id="project-03">
+          <div class="project-3d-tilt-box">
+            
+            <div class="proj-header-line">
+              <div class="proj-id-badge">
+                <span class="proj-num">03</span>
+                <span class="proj-dot">·</span>
+                <span class="proj-category">DATABASE DESIGN / BACKEND ARCHITECTURE</span>
+              </div>
+              <div class="proj-status-badge">
+                <span class="status-live-dot"></span>
+                <span>RELATIONAL CORE</span>
+              </div>
+            </div>
+
+            <div class="proj-main-grid">
+              <div class="proj-content-col">
+                <h3 class="proj-title">Lost and Found App</h3>
+                
+                <p class="proj-desc">
+                  Developed backend architecture for a community-focused lost and found application, using SQL-based data management workflows to support communication between the client and server.
+                </p>
+
+                <div class="proj-specs-block">
+                  <div class="spec-row">
+                    <span class="spec-key">PRIMARY FOCUS:</span>
+                    <span class="spec-val">Robust Client-Server Data Pipelines</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">DATA ENGINE:</span>
+                    <span class="spec-val">Structured SQL schema with normalized relational integrity</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">COMMUNITY IMPACT:</span>
+                    <span class="spec-val">Streamlined claim, verification, and recovery workflows</span>
+                  </div>
+                </div>
+
+                <div class="proj-tech-stack">
+                  <span class="tech-pill">SQL</span>
+                  <span class="tech-pill">Backend Architecture</span>
+                  <span class="tech-pill">Data Management</span>
+                  <span class="tech-pill">Client-Server Communication</span>
+                  <span class="tech-pill">Relational Schemas</span>
+                </div>
+              </div>
+
+              <div class="proj-visual-col">
+                <div class="schematic-card" aria-hidden="true">
+                  <div class="schematic-top">
+                    <span class="schem-label">RELATIONAL WORKFLOW SCHEMA // SQL CORE</span>
+                    <span class="schem-ver">NORMALIZED</span>
+                  </div>
+                  <div class="schematic-diagram db-diagram">
+                    <div class="sql-tables-layout">
+                      <div class="sql-table-box">
+                        <div class="tbl-head">TABLE: reported_items</div>
+                        <div class="tbl-row pk">id: UUID [PK]</div>
+                        <div class="tbl-row">title: VARCHAR(120)</div>
+                        <div class="tbl-row">category: ENUM</div>
+                        <div class="tbl-row">status: PENDING_MATCH</div>
+                      </div>
+                      <div class="sql-connector">⟷</div>
+                      <div class="sql-table-box">
+                        <div class="tbl-head">TABLE: item_claims</div>
+                        <div class="tbl-row pk">claim_id: UUID [PK]</div>
+                        <div class="tbl-row fk">item_id: UUID [FK]</div>
+                        <div class="tbl-row">claimant_id: UUID</div>
+                        <div class="tbl-row">verified: BOOLEAN</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="schematic-footer">
+                    <span class="stat-item">DATA INTEGRITY: ACID Compliant</span>
+                    <span class="stat-status">OPTIMIZED QUERIES</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- PROJECT 04: ZEWA (Zero Waste) -->
+        <article class="project-editorial-row" data-project="04" id="project-04">
+          <div class="project-3d-tilt-box">
+            
+            <div class="proj-header-line">
+              <div class="proj-id-badge">
+                <span class="proj-num">04</span>
+                <span class="proj-dot">·</span>
+                <span class="proj-category">SUSTAINABLE TECH / REAL-TIME PRICING</span>
+              </div>
+              <div class="proj-status-badge">
+                <span class="status-live-dot"></span>
+                <span>CIRCULAR ECONOMY</span>
+              </div>
+            </div>
+
+            <div class="proj-main-grid">
+              <div class="proj-content-col">
+                <h3 class="proj-title">ZEWA (Zero Waste)</h3>
+                
+                <p class="proj-desc">
+                  Built an application that helps reduce food waste by offering surplus food at discounted prices during limited time windows, helping consumers save money and producers recover value from perishable stock.
+                </p>
+
+                <div class="proj-specs-block">
+                  <div class="spec-row">
+                    <span class="spec-key">PRIMARY FOCUS:</span>
+                    <span class="spec-val">Perishable Stock Dynamic Valuation</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">CORE MECHANIC:</span>
+                    <span class="spec-val">Time-decay discount windows creating urgent buyer demand</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-key">MISSION:</span>
+                    <span class="spec-val">Recover merchant value &amp; prevent landfill food spoilage</span>
+                  </div>
+                </div>
+
+                <div class="proj-tech-stack">
+                  <span class="tech-pill">Application Architecture</span>
+                  <span class="tech-pill">Surplus Optimization</span>
+                  <span class="tech-pill">Time-Window Algorithms</span>
+                  <span class="tech-pill">Consumer Pricing</span>
+                  <span class="tech-pill">Zero Waste System</span>
+                </div>
+              </div>
+
+              <div class="proj-visual-col">
+                <div class="schematic-card" aria-hidden="true">
+                  <div class="schematic-top">
+                    <span class="schem-label">TIME-DECAY PRICING // SURPLUS OPTIMIZER</span>
+                    <span class="schem-ver">ALGO v2</span>
+                  </div>
+                  <div class="schematic-diagram zewa-diagram">
+                    <div class="decay-graph">
+                      <div class="decay-curve"></div>
+                      <div class="decay-marker" style="left:65%; top:45%;">
+                        <span class="marker-dot"></span>
+                        <span class="marker-bubble">SURPLUS WINDOW ACTIVE · 60% OFF</span>
+                      </div>
+                      <div class="decay-axes">
+                        <span class="axis-y">VALUE RECOVERED ↑</span>
+                        <span class="axis-x">EXPIRY COUNTDOWN (HOURS) →</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="schematic-footer">
+                    <span class="stat-item">IMPACT: Zero Landfill Waste Policy</span>
+                    <span class="stat-status">WINDOW ACTIVE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         SECTION 02: ABOUT SECTION (Editorial Typography & Profile)
+    ========================================================================== -->
+    <section class="editorial-section about-section" id="about" aria-label="About Manoranjan L">
+      
+      <!-- Section Header -->
+      <div class="section-header-row">
+        <div class="section-num-col">
+          <span class="sec-index">02</span>
+          <span class="sec-slash">/</span>
+          <span class="sec-total">05</span>
+        </div>
+        <div class="section-title-col">
+          <span class="sec-pre">BIOGRAPHY &amp; ASPIRATIONS</span>
+          <h2 class="sec-heading">A LITTLE ABOUT ME</h2>
+        </div>
+        <div class="section-meta-col">
+          <span class="sec-tag">BACKGROUND · EDUCATION · PHILOSOPHY</span>
+        </div>
+      </div>
+
+      <div class="about-editorial-grid">
+        
+        <!-- Left Column: Authentic Portrait with Monochrome Paper Framing -->
+        <div class="about-portrait-col">
+          <div class="portrait-frame" id="portrait-frame">
+            <div class="portrait-corner c-tl">+</div>
+            <div class="portrait-corner c-tr">+</div>
+            <div class="portrait-corner c-bl">+</div>
+            <div class="portrait-corner c-br">+</div>
+            
+            <div class="portrait-image-wrapper">
+              <img 
+                src="images/profile.jpg" 
+                alt="Portrait of Manoranjan L" 
+                class="portrait-img" 
+                loading="lazy" 
+                width="480" 
+                height="480"
+                onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+              >
+              <!-- Graceful fallback if image is missing -->
+              <div class="photo-fallback" style="display: none;" aria-label="Portrait of Manoranjan L fallback">
+                <span class="fallback-monogram">ML</span>
+                <span class="fallback-caption">MANORANJAN L</span>
+              </div>
+              <div class="portrait-filter-grain" aria-hidden="true"></div>
+            </div>
+
+            <!-- Authentic Editorial Label Tape -->
+            <div class="portrait-caption-tape">
+              <span class="tape-text">MANORANJAN L · MVJCE CSE(DS)</span>
+              <span class="tape-code">REF: 2024–28</span>
+            </div>
+          </div>
+
+          <!-- Academic Snapshot Card -->
+          <div class="academic-snapshot-card">
+            <div class="snap-title">INSTITUTIONAL CREDENTIALS</div>
+            <div class="snap-row">
+              <span class="snap-k">COLLEGE</span>
+              <span class="snap-v">MVJ College of Engineering</span>
+            </div>
+            <div class="snap-row">
+              <span class="snap-k">DEGREE</span>
+              <span class="snap-v">B.E. — Computer Science &amp; Engg. (Data Science)</span>
+            </div>
+            <div class="snap-row">
+              <span class="snap-k">GRADUATION</span>
+              <span class="snap-v">Expected 2028</span>
+            </div>
+            <div class="snap-row">
+              <span class="snap-k">OVERALL CGPA</span>
+              <span class="snap-v highlight-score">8.0 / 10.0</span>
+            </div>
+            <div class="snap-row">
+              <span class="snap-k">LOCATION</span>
+              <span class="snap-v">Bengaluru, Karnataka, India</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Profile Narrative & Mindset -->
+        <div class="about-narrative-col">
+          
+          <div class="quote-pullout">
+            <span class="quote-mark">“</span>
+            <p class="profile-statement">
+              Driven and forward-thinking Computer Science Engineering student specializing in Data Science, with a strong foundation in backend development and cloud computing. Passionate about tackling AI-driven tasks and stepping into tech leadership roles. I thrive in fast-paced environments and believe pressure brings out the best in us.
+            </p>
+          </div>
+
+          <div class="about-deep-dive">
+            <h3 class="dive-heading">DRIVE &amp; PHILOSOPHY</h3>
+            <p class="dive-body">
+              My engineering journey is defined by a curiosity for how data and computing architecture intersect. Rather than stopping at analytical models on paper, I build end-to-end applications that bridge the gap between machine learning inference and robust backend APIs.
+            </p>
+            <p class="dive-body">
+              Whether architecting relational schemas with SQL, configuring localized weather detection systems, or leading cross-functional teams in university tech clubs, I believe in structured execution, resilience under pressure, and intentional design.
+            </p>
+          </div>
+
+          <!-- Quick Identity Matrix -->
+          <div class="identity-matrix">
+            <div class="matrix-card">
+              <span class="mat-label">01 / DISCIPLINE</span>
+              <h4 class="mat-title">Data Science &amp; AI</h4>
+              <p class="mat-sub">Machine learning classification, predictive data processing, and visual storytelling.</p>
+            </div>
+            <div class="matrix-card">
+              <span class="mat-label">02 / ARCHITECTURE</span>
+              <h4 class="mat-title">Backend Systems</h4>
+              <p class="mat-sub">Client-server communication, SQL data integrity, and low-latency workflows.</p>
+            </div>
+            <div class="matrix-card">
+              <span class="mat-label">03 / COLLABORATION</span>
+              <h4 class="mat-title">Team Leadership</h4>
+              <p class="mat-sub">President of Analytix Club &amp; Technical Lead of SDC — guiding tech deliverables.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==========================================================================
+         SECTION 03: TECHNICAL SKILLS (Typography-based Creative Arrangement)
+    ========================================================================== -->
+    <section class="editorial-section skills-section" id="skills" aria-label="Technical Skills">
+      
+      <!-- Section Header -->
+      <div class="section-header-row">
+        <div class="section-num-col">
+          <span class="sec-index">03</span>
+          <span class="sec-slash">/</span>
+          <span class="sec-total">05</span>
+        </div>
+        <div class="section-title-col">
+          <span class="sec-pre">ARSENAL &amp; CAPABILITIES</span>
+          <h2 class="sec-heading">TECHNICAL SKILLS</h2>
+        </div>
+        <div class="section-meta-col">
+          <span class="sec-tag">NO ARBITRARY PERCENTAGES · VERIFIED COMPETENCIES</span>
+        </div>
+      </div>
+
+      <!-- Editorial Typography Arrangement (Zero fake progress bars) -->
+      <div class="skills-editorial-board">
+
+        <!-- Category 1: Programming Languages -->
+        <div class="skill-category-block" data-category="programming">
+          <div class="cat-header">
+            <span class="cat-index">01</span>
+            <h3 class="cat-title">PROGRAMMING LANGUAGES</h3>
+            <span class="cat-sub">SYNTAX &amp; LOGIC</span>
+          </div>
+          <div class="skills-typography-cloud">
+            <div class="skill-stamp-card main-skill">
+              <span class="skill-name">Python</span>
+              <span class="skill-note">ML Models, Data Analysis &amp; Scripting</span>
+            </div>
+            <div class="skill-stamp-card main-skill">
+              <span class="skill-name">C++</span>
+              <span class="skill-note">Object-Oriented Architecture &amp; Logic</span>
+            </div>
+            <div class="skill-stamp-card main-skill">
+              <span class="skill-name">SQL</span>
+              <span class="skill-note">Relational Modeling &amp; Query Optimization</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">LabVIEW</span>
+              <span class="skill-note">Graphical System Design &amp; Data Acquisition</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 2: Cloud & Infrastructure -->
+        <div class="skill-category-block" data-category="cloud">
+          <div class="cat-header">
+            <span class="cat-index">02</span>
+            <h3 class="cat-title">CLOUD &amp; INFRASTRUCTURE</h3>
+            <span class="cat-sub">DEPLOYMENT &amp; RUNTIMES</span>
+          </div>
+          <div class="skills-typography-cloud">
+            <div class="skill-stamp-card">
+              <span class="skill-name">Cloud Computing</span>
+              <span class="skill-note">Scalable Compute, Storage &amp; Workloads</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">Virtual Machines</span>
+              <span class="skill-note">Hypervisors, Isolated Runtimes &amp; Stacks</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">Vagrant</span>
+              <span class="skill-note">Reproducible Development Environments</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">Linux / Ubuntu</span>
+              <span class="skill-note">POSIX CLI, Shell Scripting &amp; Sysadmin</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 3: Data & Visualization -->
+        <div class="skill-category-block" data-category="data">
+          <div class="cat-header">
+            <span class="cat-index">03</span>
+            <h3 class="cat-title">DATA &amp; VISUALIZATION</h3>
+            <span class="cat-sub">INSIGHTS &amp; DASHBOARDS</span>
+          </div>
+          <div class="skills-typography-cloud">
+            <div class="skill-stamp-card">
+              <span class="skill-name">Tableau</span>
+              <span class="skill-note">Exploratory Visualizations &amp; Business Intelligence</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">Power BI</span>
+              <span class="skill-note">Data Modeling, DAX &amp; Executive Dashboards</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 4: Core Strengths -->
+        <div class="skill-category-block" data-category="strengths">
+          <div class="cat-header">
+            <span class="cat-index">04</span>
+            <h3 class="cat-title">CORE STRENGTHS</h3>
+            <span class="cat-sub">PRIMARY DISCIPLINES</span>
+          </div>
+          <div class="skills-typography-cloud">
+            <div class="skill-stamp-card highlight-stamp">
+              <span class="skill-name">Backend Development</span>
+              <span class="skill-note">API Design, Database Synchronization &amp; Systems Logic</span>
+            </div>
+            <div class="skill-stamp-card highlight-stamp">
+              <span class="skill-name">AI-Driven Tasks</span>
+              <span class="skill-note">Applied Machine Learning, Predictive Modeling &amp; Classification</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 5: Interpersonal Skills -->
+        <div class="skill-category-block" data-category="interpersonal">
+          <div class="cat-header">
+            <span class="cat-index">05</span>
+            <h3 class="cat-title">INTERPERSONAL SKILLS</h3>
+            <span class="cat-sub">HUMAN &amp; TEAM LEADERSHIP</span>
+          </div>
+          <div class="skills-typography-cloud">
+            <div class="skill-stamp-card">
+              <span class="skill-name">Impactful Communication</span>
+              <span class="skill-note">Articulating Technical Concepts Across Multi-Disciplinary Groups</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">Collaborative Teamwork</span>
+              <span class="skill-note">High-Stakes Group Synergy &amp; Collective Problem Solving</span>
+            </div>
+            <div class="skill-stamp-card">
+              <span class="skill-name">Technical Leadership</span>
+              <span class="skill-note">Directing Architecture, Mentoring Peers &amp; Club Initiatives</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==========================================================================
+         SECTION 04: LEADERSHIP & INITIATIVE (Two Powerful Editorial Blocks)
+    ========================================================================== -->
+    <section class="editorial-section leadership-section" id="leadership" aria-label="Leadership and Initiative">
+      
+      <!-- Section Header -->
+      <div class="section-header-row">
+        <div class="section-num-col">
+          <span class="sec-index">04</span>
+          <span class="sec-slash">/</span>
+          <span class="sec-total">05</span>
+        </div>
+        <div class="section-title-col">
+          <span class="sec-pre">RESPONSIBILITY &amp; IMPACT</span>
+          <h2 class="sec-heading">LEADERSHIP &amp; INITIATIVE</h2>
+        </div>
+        <div class="section-meta-col">
+          <span class="sec-tag">DEPARTMENTAL GOVERNANCE · TECHNICAL DIRECTION</span>
+        </div>
+      </div>
+
+      <div class="leadership-cards-grid">
+
+        <!-- LEADERSHIP BLOCK 01: President — Analytix Club -->
+        <div class="leadership-card" id="lead-analytix">
+          <div class="lead-top-bar">
+            <div class="lead-role-badge">OFFICIAL LEADERSHIP</div>
+            <div class="lead-period">2025 – PRESENT</div>
+          </div>
+
+          <div class="lead-body">
+            <div class="lead-title-group">
+              <span class="lead-org">DEPARTMENT OF CSE, DATA SCIENCE · MVJCE</span>
+              <h3 class="lead-heading">President — Analytix Club</h3>
+            </div>
+
+            <p class="lead-summary">
+              Lead the department club across its technical, design, and media teams.
+            </p>
+
+            <div class="lead-details-list">
+              <div class="lead-detail-item">
+                <span class="detail-bullet">■</span>
+                <span class="detail-text">Steer club strategy across all operational verticals, coordinating interdisciplinary teams spanning data science development, graphic design, and media outreach.</span>
+              </div>
+              <div class="lead-detail-item">
+                <span class="detail-bullet">■</span>
+                <span class="detail-text">Organize hands-on technical bootcamps, code sprints, and guest speaker symposiums to cultivate peer-to-peer data science problem solving.</span>
+              </div>
+              <div class="lead-detail-item">
+                <span class="detail-bullet">■</span>
+                <span class="detail-text">Interface directly with faculty advisors and student representatives to ensure rigorous academic and technical standard-setting.</span>
+              </div>
+            </div>
+
+            <div class="lead-tags">
+              <span class="lead-tag">Club Governance</span>
+              <span class="lead-tag">Multi-Team Oversight</span>
+              <span class="lead-tag">Technical Direction</span>
+              <span class="lead-tag">Design &amp; Media Coordination</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADERSHIP BLOCK 02: Technical Lead — Software Development Club (SDC) -->
+        <div class="leadership-card" id="lead-sdc">
+          <div class="lead-top-bar">
+            <div class="lead-role-badge">TECHNICAL GOVERNANCE</div>
+            <div class="lead-period">2025 – PRESENT</div>
+          </div>
+
+          <div class="lead-body">
+            <div class="lead-title-group">
+              <span class="lead-org">SOFTWARE DEVELOPMENT CLUB (SDC) · MVJCE</span>
+              <h3 class="lead-heading">Technical Lead — SDC</h3>
+            </div>
+
+            <p class="lead-summary">
+              Lead the club's technical team.
+            </p>
+
+            <div class="lead-details-list">
+              <div class="lead-detail-item">
+                <span class="detail-bullet">■</span>
+                <span class="detail-text">Direct the software development club's engineering core, overseeing project architecture, code reviews, and technology stack choices.</span>
+              </div>
+              <div class="lead-detail-item">
+                <span class="detail-bullet">■</span>
+                <span class="detail-text">Mentor junior developers in backend development practices, version control workflows, and structured debugging methodologies.</span>
+              </div>
+              <div class="lead-detail-item">
+                <span class="detail-bullet">■</span>
+                <span class="detail-text">Drive internal software initiatives to create digital solutions for campus communities and student organizations.</span>
+              </div>
+            </div>
+
+            <div class="lead-tags">
+              <span class="lead-tag">Engineering Leadership</span>
+              <span class="lead-tag">Architecture Oversight</span>
+              <span class="lead-tag">Code Review</span>
+              <span class="lead-tag">Developer Mentorship</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==========================================================================
+         SECTION 05: CONTACT SECTION (Minimal & Oversized Editorial Area)
+    ========================================================================== -->
+    <section class="editorial-section contact-section" id="contact" aria-label="Contact & Connect">
+      
+      <!-- Section Header -->
+      <div class="section-header-row">
+        <div class="section-num-col">
+          <span class="sec-index">05</span>
+          <span class="sec-slash">/</span>
+          <span class="sec-total">05</span>
+        </div>
+        <div class="section-title-col">
+          <span class="sec-pre">INQUIRIES &amp; COLLABORATION</span>
+          <h2 class="sec-heading">LET’S CONNECT</h2>
+        </div>
+        <div class="section-meta-col">
+          <span class="sec-tag">AVAILABLE FOR ROLES &amp; INTERNSHIPS</span>
+        </div>
+      </div>
+
+      <div class="contact-editorial-container">
+        
+        <!-- Big Artistic Invitation Headline -->
+        <div class="contact-hero-banner">
+          <h3 class="contact-big-title">
+            HAVE AN IDEA OR OPPORTUNITY? <br>
+            <span class="charcoal-highlight">LET’S BUILD SOMETHING MEANINGFUL.</span>
+          </h3>
+          <div class="contact-brush-line" aria-hidden="true"></div>
+        </div>
+
+        <div class="contact-grid">
+          
+          <!-- Primary Direct Channel: Email Card -->
+          <div class="contact-channel-card main-channel">
+            <span class="channel-label">DIRECT INBOX (CLICK TO WRITE)</span>
+            <a href="mailto:manuaradhya2326@gmail.com" class="big-email-link" id="contact-email-link">
+              <span class="email-text">manuaradhya2326@gmail.com</span>
+              <span class="email-arrow">↗</span>
+            </a>
+            
+            <div class="email-copy-bar">
+              <button id="copy-email-btn" class="copy-btn" aria-label="Copy email address to clipboard">
+                <span class="copy-icon" aria-hidden="true">📋</span>
+                <span class="copy-label">COPY EMAIL ADDRESS</span>
+              </button>
+              <span id="copy-feedback" class="copy-feedback-msg" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <!-- Phone & Location Card -->
+          <div class="contact-channel-card">
+            <span class="channel-label">PHONE &amp; TELEPHONY</span>
+            <a href="tel:+918660322599" class="phone-link">
+              <span class="phone-number">+91 86603 22599</span>
+              <span class="email-arrow">↗</span>
+            </a>
+            
+            <div class="channel-meta-info">
+              <div class="info-row">
+                <span class="k">LOCATION:</span>
+                <span class="v">Bengaluru, Karnataka, India</span>
+              </div>
+              <div class="info-row">
+                <span class="k">TIMEZONE:</span>
+                <span class="v">Indian Standard Time (IST / UTC +5:30)</span>
+              </div>
+              <div class="info-row">
+                <span class="k">LOCAL TIME:</span>
+                <span class="v" id="live-ist-clock">15:00:00 IST</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Verified Social & Profile Links (Direct from authentic resume) -->
+        <div class="social-links-shelf">
+          <span class="shelf-label">AUTHENTIC NETWORK PROFILES:</span>
+          <div class="shelf-links">
+            <a href="https://www.linkedin.com/in/manoranjan-l-a29176405" target="_blank" rel="noopener noreferrer" class="social-chip">
+              <span class="chip-name">LinkedIn</span>
+              <span class="chip-handle">in/manoranjan-l-a29176405</span>
+              <span class="chip-arrow" aria-hidden="true">↗</span>
+            </a>
+            <a href="https://github.com/Manuaradhya01" target="_blank" rel="noopener noreferrer" class="social-chip">
+              <span class="chip-name">GitHub</span>
+              <span class="chip-handle">@Manuaradhya01</span>
+              <span class="chip-arrow" aria-hidden="true">↗</span>
+            </a>
+            <a href="https://www.instagram.com/__manuaradhya" target="_blank" rel="noopener noreferrer" class="social-chip">
+              <span class="chip-name">Instagram</span>
+              <span class="chip-handle">@__manuaradhya</span>
+              <span class="chip-arrow" aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Back to Top Action -->
+        <div class="back-to-top-row">
+          <a href="#hero" class="back-to-top-btn" id="back-to-top" aria-label="Return to top of page">
+            <span class="top-arrow" aria-hidden="true">↑</span>
+            <span class="top-text">RETURN TO TOP OF PAGE</span>
+          </a>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       SITE FOOTER (Editorial & Dynamic Year)
+  ========================================================================== -->
+  <footer class="editorial-footer">
+    <div class="footer-top-rule"></div>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-statement">DESIGNED WITH INTENTION · BUILT WITH CODE</span>
+        <span class="footer-sub">CREATIVE 3D EDITORIAL PORTFOLIO ARCHITECTURE</span>
+      </div>
+      <div class="footer-center">
+        <span class="footer-author">MANORANJAN L</span>
+        <span class="footer-degree">B.E. COMPUTER SCIENCE &amp; ENGINEERING (DATA SCIENCE)</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-copy">© <span id="current-year">2026</span> MANORANJAN L.</span>
+        <span class="footer-tech">VANILLA HTML5 / CSS3 / ES6+</span>
+      </div>
+    </div>
+    <div class="footer-bottom-rule"></div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
