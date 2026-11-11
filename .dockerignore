@@ -1,0 +1,33 @@
+# Version control & CI/CD metadata
+.git
+.gitignore
+.github
+
+# Dependencies & environment secrets
+node_modules
+.env
+.env.*
+*.pem
+*.key
+
+# Local build artifacts & logs
+dist
+build
+out
+.cache
+*.log
+
+# Docker & documentation files not required in runtime context
+Dockerfile
+docker-compose.yml
+.dockerignore
+README.md
+Cloud_Deployment_Report.md
+
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
+__MACOSX
+.vscode
+.idea
+
