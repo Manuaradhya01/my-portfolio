@@ -13,7 +13,7 @@
     <img src="https://img.shields.io/badge/GitHub-my--portfolio-181717?style=for-the-badge&logo=github" alt="GitHub"/>
   </a>
   &nbsp;
-  <img src="https://img.shields.io/badge/AWS-EC2%20Ubuntu-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS EC2"/>
+  <img src="https://img.shields.io/badge/Azure-Virtual%20Machine-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="Microsoft Azure VM"/>
   &nbsp;
   <img src="https://img.shields.io/badge/Docker-Nginx%20Alpine-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker & Nginx"/>
   &nbsp;
@@ -49,7 +49,7 @@ A **creative 3D-inspired editorial portfolio** built entirely with vanilla HTML,
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![Google Fonts](https://img.shields.io/badge/Google_Fonts-4285F4?style=flat-square&logo=google&logoColor=white)
-![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=flat-square&logo=amazonaws&logoColor=white)
+![Microsoft Azure](https://img.shields.io/badge/Microsoft_Azure-0078D4?style=flat-square&logo=microsoftazure&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
@@ -75,7 +75,7 @@ A **creative 3D-inspired editorial portfolio** built entirely with vanilla HTML,
 my-portfolio/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml              # GitHub Actions CI/CD SSH deployment to AWS EC2
+│       └── deploy.yml              # GitHub Actions CI/CD SSH deployment to Azure VM
 ├── manoranjan_protfolio/
 │   ├── index.html                  # Main portfolio page
 │   ├── style.css                   # All styles (Editorial design system)
@@ -96,16 +96,16 @@ my-portfolio/
 
 ---
 
-## 🚀 Cloud Deployment (AWS EC2 + Docker + Nginx)
+## 🚀 Cloud Deployment (Microsoft Azure VM + Docker + Nginx)
 
-This site is containerized with **Docker** (`nginx:alpine`) and deployed to an **AWS EC2 Ubuntu** instance via **GitHub Actions** CI/CD on every push to `main` (or `master`).
+This site is containerized with **Docker** (`nginx:alpine`) and deployed to a **Microsoft Azure Virtual Machine (Ubuntu 22.04 LTS)** via **GitHub Actions** CI/CD on every push to `master` (or `main`).
 
 ```bash
 # Clone the repo
 git clone https://github.com/Manuaradhya01/my-portfolio.git
 cd my-portfolio
 
-# Run locally or on EC2 with Docker Compose (Port 80)
+# Run locally or on Azure VM with Docker Compose (Port 80)
 docker compose up -d --build
 
 # Verify running container
@@ -120,7 +120,7 @@ docker ps
 |----------|------|
 | 📧 Email | manuaradhya2326@gmail.com |
 | 🐙 GitHub | [@Manuaradhya01](https://github.com/Manuaradhya01) |
-| ☁️ Hosting | AWS EC2 Public IP (`http://<EC2-PUBLIC-IP>`) |
+| ☁️ Hosting | Azure VM Public IP (`http://<AZURE-PUBLIC-IP>`) |
 
 ---
 

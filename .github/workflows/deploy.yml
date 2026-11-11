@@ -1,19 +1,19 @@
-name: Deploy Portfolio to AWS EC2
+name: Deploy Portfolio to Azure VM
 
 on:
   push:
     branches:
+      - master
       - main
-      - master # Supports current repository default branch alongside main
   workflow_dispatch:
 
 concurrency:
-  group: aws-ec2-production-deploy
+  group: azure-vm-production-deploy
   cancel-in-progress: false
 
 jobs:
   validate-and-deploy:
-    name: Validate Assets & Deploy to AWS EC2
+    name: Validate Assets & Deploy to Azure VM
     runs-on: ubuntu-latest
 
     steps:
@@ -31,34 +31,36 @@ jobs:
           test -f manoranjan_protfolio/script.js
           echo "Verified Docker, Nginx, and static portfolio files."
 
-      - name: Deploy Containerized Portfolio to AWS EC2 via SSH
+      - name: Deploy Containerized Portfolio to Azure VM via SSH
         env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          AZURE_VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          AZURE_VM_USER: ${{ secrets.AZURE_VM_USER }}
+          AZURE_VM_SSH_KEY: ${{ secrets.AZURE_VM_SSH_KEY }}
           GITHUB_REPO: ${{ github.repository }}
           TARGET_BRANCH: ${{ github.ref_name }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
 
-          if [ -z "$EC2_HOST" ] || [ -z "$EC2_USER" ] || [ -z "$EC2_SSH_KEY" ]; then
-            echo "Error: Missing required GitHub Secrets (EC2_HOST, EC2_USER, EC2_SSH_KEY)." >&2
+          AZURE_VM_USER="${AZURE_VM_USER:-azureuser}"
+
+          if [ -z "$AZURE_VM_HOST" ] || [ -z "$AZURE_VM_SSH_KEY" ]; then
+            echo "Error: Missing required GitHub Secrets (AZURE_VM_HOST, AZURE_VM_SSH_KEY)." >&2
             exit 1
           fi
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          printf '%s\n' "$EC2_SSH_KEY" | tr -d '\r' > ~/.ssh/ec2_deploy_key
-          chmod 600 ~/.ssh/ec2_deploy_key
+          printf '%s\n' "$AZURE_VM_SSH_KEY" | tr -d '\r' > ~/.ssh/azure_vm_key
+          chmod 600 ~/.ssh/azure_vm_key
 
-          trap 'rm -f ~/.ssh/ec2_deploy_key' EXIT
+          trap 'rm -f ~/.ssh/azure_vm_key' EXIT
 
-          ssh -i ~/.ssh/ec2_deploy_key \
+          ssh -i ~/.ssh/azure_vm_key \
             -o StrictHostKeyChecking=accept-new \
             -o ServerAliveInterval=30 \
             -o ConnectTimeout=20 \
-            "${EC2_USER}@${EC2_HOST}" \
+            "${AZURE_VM_USER}@${AZURE_VM_HOST}" \
             "GITHUB_REPO='$GITHUB_REPO' TARGET_BRANCH='$TARGET_BRANCH' COMMIT_SHA='$COMMIT_SHA' bash -s" <<'EOF'
             set -euo pipefail
 
@@ -68,7 +70,7 @@ jobs:
             CONTAINER_NAME="portfolio-web"
             SHORT_SHA="${COMMIT_SHA:0:7}"
 
-            echo "==> [1/5] Pulling latest repository changes..."
+            echo "==> [1/5] Pulling latest repository changes under ~/my-portfolio..."
             if [ ! -d "$APP_DIR/.git" ]; then
               git clone --branch "$TARGET_BRANCH" "$REPO_URL" "$APP_DIR"
             fi
@@ -77,26 +79,25 @@ jobs:
             git checkout "$TARGET_BRANCH"
             git reset --hard "origin/$TARGET_BRANCH"
 
-            echo "==> [2/5] Building and re-tagging Docker image (${IMAGE_NAME}:${SHORT_SHA})..."
+            echo "==> [2/5] Rebuilding and tagging Docker image (${IMAGE_NAME}:${SHORT_SHA})..."
             docker build -t "${IMAGE_NAME}:${SHORT_SHA}" -t "${IMAGE_NAME}:latest" .
 
-            echo "==> [3/5] Stopping and removing existing container..."
+            echo "==> [3/5] Stopping and removing existing portfolio-web container..."
             if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
               docker stop "$CONTAINER_NAME" || true
               docker rm -f "$CONTAINER_NAME" || true
             fi
 
-            echo "==> [4/5] Starting new containerized application on port 80..."
+            echo "==> [4/5] Starting portfolio-web container on port 80..."
             docker run -d \
               --name "$CONTAINER_NAME" \
               --restart unless-stopped \
               -p 80:80 \
               "${IMAGE_NAME}:latest"
 
-            echo "==> [5/5] Cleaning dangling images & verifying container health..."
+            echo "==> [5/5] Pruning dangling images & verifying health via curl..."
             docker image prune -f
             sleep 2
             docker ps --filter "name=$CONTAINER_NAME"
             curl -fsS -I http://127.0.0.1:80/
           EOF
-

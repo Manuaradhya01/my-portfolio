@@ -15,7 +15,7 @@
 | **Institution** | MVJ College of Engineering, Bengaluru, Karnataka, India |
 | **Email Address** | `manuaradhya2326@gmail.com` |
 | **Source Repository** | `https://github.com/Manuaradhya01/my-portfolio` |
-| **Deployed Cloud Endpoint** | `http://<EC2-PUBLIC-IP>` |
+| **Deployed Cloud Endpoint** | `http://<AZURE-PUBLIC-IP>` |
 | **Evaluator / Mentor Name** | `[Insert Faculty / Technical Evaluator Name]` |
 | **Submission Date** | `[Insert Submission Date]` |
 
@@ -25,16 +25,16 @@
 
 ### 2.1 Executive Summary
 
-This project demonstrates end-to-end cloud infrastructure provisioning, containerization, reverse-proxy/web-server configuration, and automated Continuous Integration / Continuous Deployment (CI/CD) for a personal portfolio web application on **Amazon Web Services (AWS)**.
+This project demonstrates end-to-end cloud infrastructure provisioning, containerization, web-server configuration, and automated Continuous Integration / Continuous Deployment (CI/CD) for a personal portfolio web application on **Microsoft Azure**.
 
-An initial codebase audit of the repository (`Manuaradhya01/my-portfolio`) established that the portfolio website is engineered with zero-dependency **Vanilla HTML5, CSS3, and ES6+ JavaScript** residing under the `manoranjan_protfolio/` directory, along with static image and PDF résumé assets. To host this application reliably on dedicated cloud compute rather than manual file uploads, the site is packaged using a **multi-stage Docker build**, served via a tuned **Nginx Alpine** container listening on **Port 80**, and hosted on an **AWS EC2 Ubuntu (`t2.micro`)** virtual machine. Every push to the production branch automatically triggers a **GitHub Actions** pipeline that SSHs into the EC2 instance, pulls the latest source, builds and tags a fresh Docker image, replaces the running container safely, and validates HTTP responsiveness.
+An initial codebase audit of the repository (`Manuaradhya01/my-portfolio`) established that the portfolio website is engineered with zero-dependency **Vanilla HTML5, CSS3, and ES6+ JavaScript** residing under the `manoranjan_protfolio/` directory, along with static image and PDF résumé assets. To host this application reliably on dedicated cloud compute, the site is packaged using a **multi-stage Docker build**, served via a tuned **Nginx Alpine** container listening on **Port 80**, and hosted on **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)** using the **`Standard_B1s`** size. Every push to the `master` (or `main`) branch automatically triggers a **GitHub Actions** pipeline that SSHs into the Azure Virtual Machine as `azureuser`, pulls the latest source under `~/my-portfolio`, rebuilds and tags the Docker image, replaces the `portfolio-web` container safely on Port 80, and verifies health via `curl`.
 
 ### 2.2 Project Objectives
 
-1. **Audit & Standardize the Application Repository**: Inspect the codebase structure, identify static assets and entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`, `images/`, `assets/`), and eliminate non-AWS deployment artifacts.
+1. **Audit & Standardize the Application Repository**: Inspect the codebase structure, identify static assets and entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`, `images/`, `assets/`), and organize the repository strictly for self-hosted cloud container infrastructure.
 2. **Containerize with Multi-Stage Docker Builds**: Separate asset validation/staging from the final runtime image so the production container remains minimal, reproducible, and portable.
 3. **Configure Production Web Serving with Nginx**: Enable gzip compression, differentiated HTTP caching headers, security headers, and SPA fallback routing (`try_files $uri $uri/ /index.html;`).
-4. **Provision & Secure AWS Compute**: Launch an AWS EC2 `t2.micro` Ubuntu Server instance and configure AWS Security Group firewall rules allowing controlled SSH (Port 22) and public HTTP (Port 80) traffic.
+4. **Provision & Secure Microsoft Azure Compute**: Deploy a **Microsoft Azure Virtual Machine (Ubuntu 22.04 LTS)** via the Azure Portal (`portal.azure.com`) and configure an **Azure Network Security Group (NSG)** allowing controlled SSH (Port 22) and public HTTP (Port 80) traffic.
 5. **Automate Delivery with GitHub Actions CI/CD**: Implement an automated SSH-based deployment pipeline triggered on code pushes, ensuring repeatable zero-manual-intervention updates and automatic cleanup of stale images.
 
 ---
@@ -45,12 +45,12 @@ An initial codebase audit of the repository (`Manuaradhya01/my-portfolio`) estab
 
 ```mermaid
 flowchart LR
-    DEV["Developer<br/>(Local Git Push)"] -->|"git push (main / master)"| GH["GitHub Repository<br/>(Manuaradhya01/my-portfolio)"]
-    GH -->|"Trigger on Push"| GHA["GitHub Actions<br/>CI/CD Pipeline"]
-    GHA -->|"SSH (Port 22)<br/>EC2_HOST / EC2_USER / EC2_SSH_KEY"| EC2["AWS EC2 Instance<br/>(Ubuntu Linux · t2.micro)"]
-    EC2 -->|"git pull & docker build"| DOCKER["Docker Engine<br/>(Multi-Stage Build)"]
-    DOCKER -->|"docker run -p 80:80<br/>--restart unless-stopped"| NGINX["Nginx Alpine Container<br/>(Port 80 · Static + Gzip + Cache)"]
-    NGINX -->|"HTTP Port 80<br/>(AWS Security Group Inbound)"| USERS["End Users<br/>(Web Browsers)"]
+    DEV["Developer<br/>(Local Git Push)"] -->|"git push (master / main)"| GH["GitHub Repository<br/>(Manuaradhya01/my-portfolio)"]
+    GH -->|"Trigger on Push"| GHA["GitHub Actions CI/CD<br/>(.github/workflows/deploy.yml)"]
+    GHA -->|"SSH (Port 22)<br/>AZURE_VM_HOST / AZURE_VM_USER / AZURE_VM_SSH_KEY"| VM["Azure Virtual Machine (Ubuntu)<br/>(Standard_B1s · Ubuntu 22.04 LTS)"]
+    VM -->|"git pull & docker build"| DOCKER["Docker Engine<br/>(Multi-Stage Build)"]
+    DOCKER -->|"docker run -p 80:80<br/>--restart unless-stopped"| NGINX["Nginx Container (Port 80)<br/>(Static + Gzip + Cache + SPA Fallback)"]
+    NGINX -->|"HTTP Port 80<br/>(Azure NSG Inbound Rule)"| USERS["End Users<br/>(Web Browsers)"]
 ```
 
 ### 3.2 End-to-End Pipeline Flow (ASCII Schematic)
@@ -58,27 +58,28 @@ flowchart LR
 ```text
 +-------------+       git push        +-----------------------+
 |  Developer  | --------------------> |   GitHub Repository   |
-| Workstation |    (main / master)    |  Manuaradhya01/       |
+| Workstation |    (master / main)    |  Manuaradhya01/       |
 +-------------+                       |  my-portfolio         |
                                       +-----------+-----------+
                                                   |
                                                   | Triggers workflow
                                                   v
                                       +-----------------------+
-                                      | GitHub Actions Runner |
+                                      | GitHub Actions CI/CD  |
                                       |   (.github/workflows/ |
                                       |       deploy.yml)     |
                                       +-----------+-----------+
                                                   |
                                                   | Secure SSH (Port 22)
-                                                  | using GitHub Secrets
+                                                  | AZURE_VM_HOST / azureuser /
+                                                  | AZURE_VM_SSH_KEY
                                                   v
 +-------------------------------------------------------------------+
-|               AWS EC2 Instance (Ubuntu · t2.micro)                |
-|               AWS Security Group: Inbound Ports 22, 80            |
+|      Azure Virtual Machine (Ubuntu 22.04 LTS · Standard_B1s)      |
+|      Azure Network Security Group (NSG): Inbound Ports 22, 80     |
 |                                                                   |
 |  +-----------------------+          +--------------------------+  |
-|  |     Docker Engine     |          |  Nginx Alpine Container  |  |
+|  |     Docker Engine     |          |  Nginx Container (Port 80)| |
 |  |  1. git fetch & reset | -------> |  - Port Mapping 80:80    |  |
 |  |  2. docker build      |          |  - Gzip Compression      |  |
 |  |  3. stop/rm old ctr   |          |  - Static Asset Caching  |  |
@@ -90,7 +91,7 @@ flowchart LR
                                                    v
                                         +---------------------+
                                         |      End Users      |
-                                        | http://<EC2-IP>:80  |
+                                        | http://<AZURE-IP>   |
                                         +---------------------+
 ```
 
@@ -98,11 +99,11 @@ flowchart LR
 
 | Audit Dimension | Finding |
 | :--- | :--- |
-| **Application Stack** | Vanilla HTML5, CSS3, ES6+ JavaScript (no Node.js bundler or runtime dependencies) |
+| **Application Stack** | Vanilla HTML5, CSS3, ES6+ JavaScript (zero Node.js bundler or runtime dependencies) |
 | **Source / Output Directory** | `manoranjan_protfolio/` (`index.html`, `style.css`, `script.js`, `images/profile.jpg`, `assets/`) |
 | **Build Command** | None required for transpilation; handled in Dockerfile Stage 1 via validation, cleanup, and permission normalization into `/dist` |
 | **Routing & Asset Paths** | Relative URLs (`style.css`, `script.js`, `images/...`, `assets/...`) served cleanly from web root `/` |
-| **Default Git Branch** | `master` (workflow configured to trigger on both `main` and `master`) |
+| **Default Git Branch** | `master` (workflow configured to trigger on `master` and `main`) |
 
 ---
 
@@ -110,10 +111,11 @@ flowchart LR
 
 | Layer | Technology | Role in Infrastructure Stack |
 | :--- | :--- | :--- |
-| **Cloud Compute (IaaS)** | **AWS EC2 (`t2.micro`)** | Virtualized cloud server (1 vCPU, 1 GiB RAM, AWS Free Tier eligible) hosting the container runtime and exposing a public IPv4 endpoint. |
-| **Operating System** | **Ubuntu Server LTS (Linux)** | Stable Debian-based POSIX server OS running Docker Engine, OpenSSH daemon, and system networking tools. |
+| **Cloud Compute (IaaS)** | **Microsoft Azure Virtual Machines (`Standard_B1s`)** | Burstable cloud virtual machine (1 vCPU, 1 GiB RAM, Azure Free Services eligible) hosting Docker Engine and exposing a public IPv4 endpoint. |
+| **Operating System** | **Ubuntu Server 22.04 LTS (Linux)** | Long-term-support Debian-based server OS running Docker Engine, OpenSSH daemon, and Linux networking tools. |
+| **Cloud Firewall** | **Azure Network Security Group (NSG)** | Stateful virtual network firewall filtering inbound/outbound traffic on Ports 22 (SSH) and 80 (HTTP). |
 | **Containerization** | **Docker & Docker Compose** | Packages the static site and Nginx config into an immutable image via a multi-stage `Dockerfile`, guaranteeing environment parity and automatic restarts (`unless-stopped`). |
-| **Web Server** | **Nginx (`nginx:alpine`)** | Lightweight (~45 MB final footprint) event-driven HTTP server delivering static files on Port 80 with gzip compression, cache-control headers, and `try_files` routing fallback. |
+| **Web Server** | **Nginx (`nginx:alpine`)** | Lightweight event-driven HTTP server delivering static files on Port 80 with gzip compression, cache-control headers, and `try_files` routing fallback. |
 | **CI/CD Automation** | **GitHub Actions** | Event-driven automation platform running on `ubuntu-latest` that validates repository artifacts and deploys updates over SSH on every push. |
 | **Frontend Application** | **HTML5 / CSS3 / Vanilla JS** | Editorial 3D-perspective portfolio interface featuring SVG grain filters, ambient particle canvas, interactive tilt physics, and downloadable PDF résumé. |
 
@@ -121,43 +123,56 @@ flowchart LR
 
 ## 5. Step-by-Step Implementation Guide
 
-### Step 1: AWS EC2 Instance Provisioning
+### Step 1: Microsoft Azure Virtual Machine Provisioning (`portal.azure.com`)
 
-1. Sign in to the **AWS Management Console** and open the **EC2 Dashboard** in the desired region (e.g., `ap-south-1` Mumbai or `us-east-1` N. Virginia).
-2. Click **Launch instance** and configure the following parameters:
-   - **Name**: `portfolio-web-ec2`
-   - **Application and OS Images (AMI)**: Select **Ubuntu Server 24.04 LTS (HVM), SSD Volume Type** (or Ubuntu Server 22.04 LTS), `64-bit (x86)`.
-   - **Instance Type**: Select **`t2.micro`** (1 vCPU, 1 GiB memory — Free Tier eligible).
-   - **Key Pair (login)**: Click **Create new key pair**, name it `portfolio-ec2-key`, select **RSA** and **`.pem`** format, and download `portfolio-ec2-key.pem` safely.
-   - **Network Settings**: Ensure **Auto-assign public IP** is set to **Enable**.
-   - **Configure Storage**: Allocate **15 GiB `gp3`** (within the 30 GiB Free Tier EBS allowance) to leave headroom for Docker image layers.
-3. Click **Launch instance** and wait until the **Instance state** changes to **Running** and **2/2 checks passed** completes.
-4. Note the **Public IPv4 address** from the EC2 Instance Summary panel.
-5. On your local workstation, restrict private key permissions before connecting:
+1. Sign in to the **Microsoft Azure Portal** (`https://portal.azure.com`).
+2. Search for **Virtual machines** in the top search bar, click **+ Create -> Azure virtual machine**, and configure the **Basics** tab:
+   - **Subscription**: Select your active Azure subscription (e.g., *Azure for Students* or *Free Trial*).
+   - **Resource group**: Click **Create new** and name it `rg-portfolio-prod`.
+   - **Virtual machine name**: `portfolio-web-vm`
+   - **Region**: Select a nearby region (e.g., `(Asia Pacific) Central India` or `(US) East US`).
+   - **Availability options**: `No infrastructure redundancy required`
+   - **Security type**: `Standard` (or `Trusted launch virtual machines` if required by default)
+   - **Image**: **Ubuntu Server 22.04 LTS - x64 Gen2**
+   - **Size**: **`Standard_B1s`** (1 vCPU, 1 GiB memory — Free tier eligible)
+3. Under **Administrator account**:
+   - **Authentication type**: **SSH public key**
+   - **Username**: **`azureuser`**
+   - **SSH public key source**: `Generate new key pair`
+   - **Key pair name**: `portfolio-vm-key`
+4. Under **Inbound port rules**:
+   - **Public inbound ports**: `Allow selected ports`
+   - **Select inbound ports**: Check **SSH (22)** and **HTTP (80)**.
+5. Under **Disks**, choose **Standard SSD (locally-redundant storage)** with the default 30 GiB OS disk (Free tier eligible).
+6. Under **Networking**, ensure **Public IP** is created and attached, then click **Review + create -> Create**.
+7. When prompted, click **Download private key and create resource** to save `portfolio-vm-key.pem`.
+8. Once deployment completes, click **Go to resource** and copy the **Public IP address** from the VM **Overview** blade.
+9. On your local workstation, restrict private key permissions and test SSH connectivity as `azureuser`:
    ```bash
-   chmod 400 portfolio-ec2-key.pem
-   ssh -i portfolio-ec2-key.pem ubuntu@<EC2-PUBLIC-IP>
+   chmod 400 portfolio-vm-key.pem
+   ssh -i portfolio-vm-key.pem azureuser@<AZURE-PUBLIC-IP>
    ```
 
 ---
 
-### Step 2: AWS Security Group Configuration
+### Step 2: Azure Network Security Group (NSG) Configuration
 
-During instance creation or via **EC2 -> Network & Security -> Security Groups -> Inbound rules**, attach a Security Group (e.g., `portfolio-web-sg`) with the following rules:
+Open **Virtual machine -> Networking -> Network settings** (or navigate directly to the attached **Network Security Group**, e.g., `portfolio-web-vm-nsg`) and verify the **Inbound security rules**:
 
-| Direction | Type | Protocol | Port Range | Source | Purpose |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Inbound** | SSH | TCP | `22` | `My IP` (or `0.0.0.0/0` when GitHub Actions runners connect dynamically) | Administrative SSH access & GitHub Actions CI/CD deployment channel |
-| **Inbound** | HTTP | TCP | `80` | `0.0.0.0/0`, `::/0` | Public browser access to the portfolio web application |
-| **Outbound** | All traffic | All | `All` | `0.0.0.0/0` | Allows `apt`, `git clone/fetch`, and Docker Hub image pulls |
+| Priority | Name | Port | Protocol | Source | Destination | Action | Purpose |
+| :---: | :--- | :---: | :---: | :--- | :--- | :---: | :--- |
+| `300` | `Allow-SSH-Inbound` | `22` | TCP | `Any` (or your IP / GitHub Actions runner ranges) | `Any` | Allow | Administrative SSH & GitHub Actions CI/CD deployment |
+| `310` | `Allow-HTTP-Inbound` | `80` | TCP | `Any` (`*`) | `Any` | Allow | Public browser access to the containerized portfolio |
 
-> **Security Note**: Because GitHub-hosted Actions runners use dynamic public IP ranges, Port 22 must either accept SSH connections from GitHub runner CIDR ranges / `0.0.0.0/0` protected strictly by asymmetric RSA/Ed25519 key authentication (with password authentication disabled in `/etc/ssh/sshd_config`), or use a dedicated Bastion/self-hosted runner.
+Default **Outbound security rules** (`AllowInternetOutBound`) permit `apt`, `git`, and Docker Hub image pulls from inside the VM.
+
+> **Security Note**: Because GitHub-hosted Actions runners connect from dynamic IP addresses, Port 22 is protected using asymmetric RSA/Ed25519 SSH key authentication with password logins disabled in `/etc/ssh/sshd_config`.
 
 ---
 
-### Step 3: EC2 Host Setup & Docker Installation
+### Step 3: Azure VM Host Setup & Docker Installation
 
-After connecting via SSH to the Ubuntu EC2 instance (`ubuntu@<EC2-PUBLIC-IP>`), install Docker Engine, Docker Compose v2, Git, and curl:
+After connecting via SSH to the Azure Ubuntu 22.04 LTS VM (`azureuser@<AZURE-PUBLIC-IP>`), install Docker Engine, Docker Compose v2, Git, and curl:
 
 ```bash
 # 1. Update apt package index and upgrade base OS packages
@@ -181,14 +196,14 @@ echo \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# 5. Add the 'ubuntu' user to the 'docker' group (avoids sudo in CI/CD scripts)
-sudo usermod -aG docker ubuntu
+# 5. Add 'azureuser' to the 'docker' group (avoids sudo in CI/CD scripts)
+sudo usermod -aG docker azureuser
 
 # 6. Enable Docker daemon on system boot
 sudo systemctl enable --now docker
 ```
 
-Log out (`exit`) and reconnect via SSH so the `docker` group membership takes effect, then verify:
+Log out (`exit`) and reconnect via SSH (`ssh -i portfolio-vm-key.pem azureuser@<AZURE-PUBLIC-IP>`) so the `docker` group membership takes effect, then verify:
 
 ```bash
 docker --version
@@ -200,7 +215,7 @@ git --version
 
 ### Step 4: Containerization with Docker & Nginx
 
-1. Clone the repository on the EC2 host (optional for manual bootstrap; the CI/CD pipeline also performs this automatically on first run):
+1. Clone the repository on the Azure VM (optional for manual bootstrap; the CI/CD pipeline also performs this automatically on first run):
    ```bash
    git clone https://github.com/Manuaradhya01/my-portfolio.git ~/my-portfolio
    cd ~/my-portfolio
@@ -209,7 +224,7 @@ git --version
    ```bash
    docker compose up -d --build
    ```
-3. Confirm that the `portfolio-web` container is running and bound to `0.0.0.0:80->80/tcp`:
+3. Confirm that the `portfolio-web` container is running and mapped to `0.0.0.0:80->80/tcp`:
    ```bash
    docker ps
    ```
@@ -219,16 +234,16 @@ git --version
 ### Step 5: Automated Deployment via GitHub Actions
 
 1. Open the GitHub repository **`https://github.com/Manuaradhya01/my-portfolio`**.
-2. Navigate to **Settings -> Secrets and variables -> Actions -> New repository secret** and create the following three encrypted secrets:
+2. Navigate to **Settings -> Secrets and variables -> Actions -> New repository secret** and add the following secrets:
 
 | Secret Name | Value Description | Example |
 | :--- | :--- | :--- |
-| `EC2_HOST` | Public IPv4 address (or Elastic IP) of the AWS EC2 instance | `13.234.xxx.xxx` |
-| `EC2_USER` | SSH login username for the Ubuntu AMI | `ubuntu` |
-| `EC2_SSH_KEY` | Full contents of the downloaded `.pem` private key file (including `-----BEGIN ...-----` and `-----END ...-----` lines) | `-----BEGIN RSA PRIVATE KEY----- ...` |
+| `AZURE_VM_HOST` | Public IPv4 address of the Azure Virtual Machine | `20.219.xxx.xxx` |
+| `AZURE_VM_USER` | SSH login username for the Azure Ubuntu VM (defaults to `azureuser` if omitted) | `azureuser` |
+| `AZURE_VM_SSH_KEY` | Full contents of `portfolio-vm-key.pem` (including `-----BEGIN ...-----` and `-----END ...-----`) | `-----BEGIN RSA PRIVATE KEY----- ...` |
 
-3. Commit and push the infrastructure files (`Dockerfile`, `docker-compose.yml`, `nginx.conf`, `.dockerignore`, `.github/workflows/deploy.yml`) to `main` (or `master`).
-4. Open the **Actions** tab on GitHub to monitor the **Deploy Portfolio to AWS EC2** workflow execution in real time.
+3. Commit and push updates to the `master` (or `main`) branch.
+4. Open the **Actions** tab on GitHub to monitor the **Deploy Portfolio to Azure VM** workflow execution in real time.
 
 ---
 
@@ -265,9 +280,6 @@ RUN test -f ./site/index.html \
 # ==============================================================================
 FROM nginx:alpine AS production
 
-LABEL maintainer="Manoranjan L <manuaradhya2326@gmail.com>"
-LABEL description="Containerized Portfolio Website hosted on AWS EC2 with Nginx"
-
 # Remove default Nginx placeholder content and configuration
 RUN rm -rf /usr/share/nginx/html/* /etc/nginx/conf.d/default.conf
 
@@ -291,7 +303,7 @@ CMD ["nginx", "-g", "daemon off;"]
 - **Stage 1 (`builder` on `alpine:3.20`)**: Because this repository uses pure Vanilla HTML5/CSS3/ES6+ without a `package.json`, Stage 1 acts as an asset validation and packaging stage. It asserts the presence of `index.html`, `style.css`, and `script.js` inside `manoranjan_protfolio/`, strips stray OS metadata files (`.DS_Store`, `Thumbs.db`), sets deterministic read permissions (`755` directories / `644` files), and stages the verified bundle into `/dist`.
 - **Stage 2 (`production` on `nginx:alpine`)**: Copies only `/dist` and `nginx.conf` from Stage 1 into a minimal `nginx:alpine` image, discarding build tooling (`findutils`) from the final image.
 - **`HEALTHCHECK`**: Uses `wget` (included via BusyBox inside `nginx:alpine`) against `127.0.0.1:80` so Docker tracks actual HTTP availability rather than just process liveness.
-- **`daemon off;`**: Keeps Nginx in the foreground as PID 1 so Docker does not mistakenly treat the container as exited.
+- **`daemon off;`**: Keeps Nginx in the foreground as PID 1 so Docker does not treat the container as exited.
 
 ---
 
@@ -379,10 +391,10 @@ server {
 **Technical Explanation:**
 - **Gzip Compression (`gzip_comp_level 6`, `gzip_min_length 256`)**: Compresses HTML, CSS, JavaScript, JSON, SVG, and WOFF2 fonts in transit, significantly shrinking payload transfer size for the 2,675-line `style.css` and `index.html`.
 - **Differentiated Static Caching**:
-  - `index.html` uses `no-cache, no-store, must-revalidate` so clients always fetch fresh deployments immediately.
+  - `index.html` uses `no-cache, no-store, must-revalidate` so clients fetch fresh deployments immediately.
   - `*.css` and `*.js` use a 7-day cache paired with `must-revalidate` (since filenames are unhashed, ensuring browsers validate ETags cleanly after updates).
   - Binary media (`profile.jpg`, `3dprotfoliotheam.jpeg`, `Manoranjan_L_Resume.pdf`) is cached for 30 days (`max-age=2592000`).
-- **SPA Fallback (`try_files $uri $uri/ /index.html;`)**: Attempts to serve an exact file or directory first and gracefully falls back to `/index.html` for client-side routes instead of returning `404 Not Found`.
+- **SPA Fallback (`try_files $uri $uri/ /index.html;`)**: Attempts to serve an exact file or directory first and falls back to `/index.html` for client-side routes instead of returning `404 Not Found`.
 - **Security Hardening**: Disables Nginx version banners (`server_tokens off`), blocks access to dotfiles (`location ~ /\.`), and preserves security headers across child `location` blocks where `add_header` overrides parent inheritance.
 
 ---
@@ -448,8 +460,8 @@ __MACOSX
 ```
 
 **Technical Explanation:**
-- **`ports: ["80:80"]`**: Maps host TCP port 80 on the EC2 instance directly to container port 80 exposed by Nginx.
-- **`restart: unless-stopped`**: Ensures the container recovers automatically after unexpected crashes or AWS EC2 host reboots, unless explicitly stopped by an administrator or CI/CD pipeline.
+- **`ports: ["80:80"]`**: Maps host TCP port 80 on the Azure Virtual Machine directly to container port 80 exposed by Nginx.
+- **`restart: unless-stopped`**: Ensures the `portfolio-web` container recovers automatically after unexpected crashes or Azure VM reboots, unless explicitly stopped by an administrator or CI/CD pipeline.
 - **`.dockerignore`**: Shrinks the Docker build context by excluding `.git`, `.github`, `node_modules`, `.env`, local build folders, and documentation, improving build speed and preventing secrets from entering build layers.
 
 ---
@@ -457,22 +469,22 @@ __MACOSX
 ### 6.4 `.github/workflows/deploy.yml` (Automated CI/CD Pipeline)
 
 ```yaml
-name: Deploy Portfolio to AWS EC2
+name: Deploy Portfolio to Azure VM
 
 on:
   push:
     branches:
+      - master
       - main
-      - master # Supports current repository default branch alongside main
   workflow_dispatch:
 
 concurrency:
-  group: aws-ec2-production-deploy
+  group: azure-vm-production-deploy
   cancel-in-progress: false
 
 jobs:
   validate-and-deploy:
-    name: Validate Assets & Deploy to AWS EC2
+    name: Validate Assets & Deploy to Azure VM
     runs-on: ubuntu-latest
 
     steps:
@@ -490,34 +502,36 @@ jobs:
           test -f manoranjan_protfolio/script.js
           echo "Verified Docker, Nginx, and static portfolio files."
 
-      - name: Deploy Containerized Portfolio to AWS EC2 via SSH
+      - name: Deploy Containerized Portfolio to Azure VM via SSH
         env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          AZURE_VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          AZURE_VM_USER: ${{ secrets.AZURE_VM_USER }}
+          AZURE_VM_SSH_KEY: ${{ secrets.AZURE_VM_SSH_KEY }}
           GITHUB_REPO: ${{ github.repository }}
           TARGET_BRANCH: ${{ github.ref_name }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
 
-          if [ -z "$EC2_HOST" ] || [ -z "$EC2_USER" ] || [ -z "$EC2_SSH_KEY" ]; then
-            echo "Error: Missing required GitHub Secrets (EC2_HOST, EC2_USER, EC2_SSH_KEY)." >&2
+          AZURE_VM_USER="${AZURE_VM_USER:-azureuser}"
+
+          if [ -z "$AZURE_VM_HOST" ] || [ -z "$AZURE_VM_SSH_KEY" ]; then
+            echo "Error: Missing required GitHub Secrets (AZURE_VM_HOST, AZURE_VM_SSH_KEY)." >&2
             exit 1
           fi
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          printf '%s\n' "$EC2_SSH_KEY" | tr -d '\r' > ~/.ssh/ec2_deploy_key
-          chmod 600 ~/.ssh/ec2_deploy_key
+          printf '%s\n' "$AZURE_VM_SSH_KEY" | tr -d '\r' > ~/.ssh/azure_vm_key
+          chmod 600 ~/.ssh/azure_vm_key
 
-          trap 'rm -f ~/.ssh/ec2_deploy_key' EXIT
+          trap 'rm -f ~/.ssh/azure_vm_key' EXIT
 
-          ssh -i ~/.ssh/ec2_deploy_key \
+          ssh -i ~/.ssh/azure_vm_key \
             -o StrictHostKeyChecking=accept-new \
             -o ServerAliveInterval=30 \
             -o ConnectTimeout=20 \
-            "${EC2_USER}@${EC2_HOST}" \
+            "${AZURE_VM_USER}@${AZURE_VM_HOST}" \
             "GITHUB_REPO='$GITHUB_REPO' TARGET_BRANCH='$TARGET_BRANCH' COMMIT_SHA='$COMMIT_SHA' bash -s" <<'EOF'
             set -euo pipefail
 
@@ -527,7 +541,7 @@ jobs:
             CONTAINER_NAME="portfolio-web"
             SHORT_SHA="${COMMIT_SHA:0:7}"
 
-            echo "==> [1/5] Pulling latest repository changes..."
+            echo "==> [1/5] Pulling latest repository changes under ~/my-portfolio..."
             if [ ! -d "$APP_DIR/.git" ]; then
               git clone --branch "$TARGET_BRANCH" "$REPO_URL" "$APP_DIR"
             fi
@@ -536,23 +550,23 @@ jobs:
             git checkout "$TARGET_BRANCH"
             git reset --hard "origin/$TARGET_BRANCH"
 
-            echo "==> [2/5] Building and re-tagging Docker image (${IMAGE_NAME}:${SHORT_SHA})..."
+            echo "==> [2/5] Rebuilding and tagging Docker image (${IMAGE_NAME}:${SHORT_SHA})..."
             docker build -t "${IMAGE_NAME}:${SHORT_SHA}" -t "${IMAGE_NAME}:latest" .
 
-            echo "==> [3/5] Stopping and removing existing container..."
+            echo "==> [3/5] Stopping and removing existing portfolio-web container..."
             if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
               docker stop "$CONTAINER_NAME" || true
               docker rm -f "$CONTAINER_NAME" || true
             fi
 
-            echo "==> [4/5] Starting new containerized application on port 80..."
+            echo "==> [4/5] Starting portfolio-web container on port 80..."
             docker run -d \
               --name "$CONTAINER_NAME" \
               --restart unless-stopped \
               -p 80:80 \
               "${IMAGE_NAME}:latest"
 
-            echo "==> [5/5] Cleaning dangling images & verifying container health..."
+            echo "==> [5/5] Pruning dangling images & verifying health via curl..."
             docker image prune -f
             sleep 2
             docker ps --filter "name=$CONTAINER_NAME"
@@ -561,15 +575,15 @@ jobs:
 ```
 
 **Technical Explanation:**
-- **Triggers & Concurrency**: Runs automatically on pushes to `main` or `master` (plus manual `workflow_dispatch`), while `concurrency` serializes deployments so concurrent pushes cannot race on Port 80.
-- **Secret Hygiene**: Normalizes Windows CRLF (`tr -d '\r'`), enforces `chmod 600` on the ephemeral key file, and deletes `~/.ssh/ec2_deploy_key` via an `EXIT` trap regardless of job outcome.
+- **Triggers & Concurrency**: Runs automatically on pushes to `master` or `main` (plus manual `workflow_dispatch`), while `concurrency` serializes deployments so concurrent pushes cannot race on Port 80.
+- **Secret Hygiene**: Defaults `AZURE_VM_USER` to `azureuser` if omitted, strips Windows CRLF (`tr -d '\r'`), enforces `chmod 600` on the ephemeral key file, and deletes `~/.ssh/azure_vm_key` via an `EXIT` trap regardless of job outcome.
 - **Immutable Image Tagging & Safe Cutover**: Builds and tags each release with both the 7-character commit SHA (`portfolio-web:<short-sha>`) and `:latest`, stops/removes any existing `portfolio-web` container cleanly, starts the new container on Port 80, prunes dangling layers (`docker image prune -f`), and executes a live `curl` smoke check before marking the pipeline green.
 
 ---
 
 ## 7. Testing & Verification
 
-Run the following verification checks from the EC2 SSH session and local browser after deployment:
+Run the following verification checks from the Azure VM SSH session (`azureuser@<AZURE-PUBLIC-IP>`) and local browser after deployment:
 
 ### 7.1 Container Status & Health Verification
 
@@ -615,7 +629,7 @@ Expected indicators in responses:
 
 ### 7.4 Live Browser Validation
 
-Open `http://<EC2-PUBLIC-IP>` in a desktop and mobile browser and verify:
+Open `http://<AZURE-PUBLIC-IP>` in a desktop and mobile browser and verify:
 - All sections render cleanly (`Hero`, `Selected Projects`, `About`, `Technical Skills`, `Leadership`, `Contact`).
 - `images/profile.jpg` loads without falling back to the monogram placeholder.
 - Clicking `06. RESUME ↓` downloads `assets/Manoranjan_L_Resume.pdf`.
@@ -627,38 +641,38 @@ Open `http://<EC2-PUBLIC-IP>` in a desktop and mobile browser and verify:
 
 Insert captured screenshots in the placeholders below before converting this document to PDF:
 
-### Screenshot 1: AWS EC2 Running Instance & Public IPv4 Details
-> **[Screenshot 1: AWS EC2 Running Instance & Public IPv4 details]**
+### Screenshot 1: Azure Portal - Running Virtual Machine Overview
+> **[Screenshot 1: Azure Portal - Running Virtual Machine Overview showing Public IP]**
 >
-> *Capture the EC2 Console Instance Summary showing Instance State: `Running`, Instance Type: `t2.micro`, Platform: `Ubuntu`, and the assigned Public IPv4 address.*
+> *Capture the Azure Portal Virtual Machine Overview blade showing Status: `Running`, Size: `Standard_B1s`, Operating system: `Linux (ubuntu 22.04)`, and the assigned Public IP address.*
 
 ---
 
-### Screenshot 2: AWS Inbound Security Group Rules
-> **[Screenshot 2: AWS Inbound Security Group Rules (Ports 22 & 80)]**
+### Screenshot 2: Azure Portal - Network Security Group (NSG) Rules
+> **[Screenshot 2: Azure Portal - Network Security Group (NSG) Inbound Port Rules (22 & 80)]**
 >
-> *Capture the Security Group Inbound Rules tab displaying TCP Port `22` (SSH) and TCP Port `80` (HTTP).*
+> *Capture the Networking / Network Security Group Inbound port rules view displaying TCP Port `22` (SSH) and TCP Port `80` (HTTP) set to `Allow`.*
 
 ---
 
-### Screenshot 3: EC2 Terminal SSH Session & Running Container
-> **[Screenshot 3: Terminal SSH session showing Docker container running (`docker ps`)]**
+### Screenshot 3: Terminal SSH Session on Azure VM
+> **[Screenshot 3: Terminal SSH session on Azure VM showing running container (docker ps)]**
 >
-> *Capture the SSH session on `ubuntu@<EC2-PUBLIC-IP>` displaying `docker ps` output with `portfolio-web` status `Up ... (healthy)` and port mapping `0.0.0.0:80->80/tcp`.*
+> *Capture the SSH session on `azureuser@<AZURE-PUBLIC-IP>` displaying `docker ps` output with `portfolio-web` status `Up ... (healthy)` and port mapping `0.0.0.0:80->80/tcp`.*
 
 ---
 
-### Screenshot 4: Successful GitHub Actions CI/CD Run
-> **[Screenshot 4: Successful GitHub Actions CI/CD deployment execution]**
+### Screenshot 4: GitHub Actions CI/CD Pipeline Execution
+> **[Screenshot 4: GitHub Actions CI/CD Pipeline successful execution checkmark]**
 >
-> *Capture the GitHub Actions workflow summary and expanded `Deploy Containerized Portfolio to AWS EC2 via SSH` job steps showing green checkmarks.*
+> *Capture the GitHub Actions workflow summary and expanded `Deploy Containerized Portfolio to Azure VM via SSH` job steps showing green checkmarks.*
 
 ---
 
 ### Screenshot 5: Live Portfolio Website in Browser
-> **[Screenshot 5: Live portfolio website running in browser via `http://<EC2-PUBLIC-IP>`]**
+> **[Screenshot 5: Live portfolio website running in browser via http://<AZURE-PUBLIC-IP>]**
 >
-> *Capture the browser address bar clearly showing `http://<EC2-PUBLIC-IP>` and the rendered 3D editorial portfolio hero section.*
+> *Capture the browser address bar clearly showing `http://<AZURE-PUBLIC-IP>` and the rendered 3D editorial portfolio hero section.*
 
 ---
 
@@ -666,22 +680,20 @@ Insert captured screenshots in the placeholders below before converting this doc
 
 | # | Challenge Encountered | Root Cause | Implemented Solution |
 | :-: | :--- | :--- | :--- |
-| 1 | **Port 80 Bind Conflicts on EC2** | Pre-installed system web services or an older container still occupying TCP Port 80 caused `Bind for 0.0.0.0:80 failed: port is already allocated`. | Added explicit pre-launch container detection (`docker ps -a --format '{{.Names}}'`) followed by `docker stop` and `docker rm -f` in `deploy.yml`, and verified host port availability with `ss -tulnp \| grep :80`. |
-| 2 | **Docker Daemon Permission Denied** | Running `docker` over SSH as the non-root `ubuntu` user initially failed with `permission denied while trying to connect to the Docker daemon socket`. | Added `ubuntu` to the `docker` group (`sudo usermod -aG docker ubuntu`) during EC2 provisioning and established a fresh SSH login session before triggering CI/CD. |
+| 1 | **Port 80 Bind Conflicts on Azure VM** | Pre-installed system web services or an older container occupying TCP Port 80 caused `Bind for 0.0.0.0:80 failed: port is already allocated`. | Added explicit pre-launch container detection (`docker ps -a --format '{{.Names}}'`) followed by `docker stop` and `docker rm -f` in `deploy.yml`, and verified host port availability with `ss -tulnp \| grep :80`. |
+| 2 | **Docker Daemon Permission Denied** | Running `docker` over SSH as the non-root `azureuser` account initially failed with `permission denied while trying to connect to the Docker daemon socket`. | Added `azureuser` to the `docker` group (`sudo usermod -aG docker azureuser`) during VM provisioning and started a fresh SSH session before triggering CI/CD. |
 | 3 | **Stale Browser Caching After Deployments** | Aggressive static caching on `index.html` or unhashed `style.css`/`script.js` files can cause returning visitors to load outdated markup after a push. | Split `nginx.conf` caching policies: `no-cache, no-store, must-revalidate` on `index.html`, `max-age=604800, must-revalidate` on CSS/JS, and `max-age=2592000` on static images and PDFs. |
 | 4 | **Subdirectory Portfolio Structure (`manoranjan_protfolio/`)** | Static website assets reside inside a nested folder (`manoranjan_protfolio/`) rather than the repository root, causing default web-root mounts to serve directory listings or 404 errors. | Designed the multi-stage `Dockerfile` to ingest `manoranjan_protfolio/`, verify required entrypoints, normalize permissions, and copy the staged `/dist` directly into `/usr/share/nginx/html`. |
-| 5 | **EBS Storage Exhaustion on `t2.micro`** | Repeated CI/CD Docker builds leave dangling intermediate layers that gradually consume the limited Free Tier EBS root volume. | Excluded `.git`, logs, and documentation via `.dockerignore` and added `docker image prune -f` after every deployment in `.github/workflows/deploy.yml`. |
+| 5 | **Disk Usage Growth on `Standard_B1s` OS Disk** | Repeated CI/CD Docker builds leave dangling intermediate layers that consume OS disk space over time. | Excluded `.git`, logs, and documentation via `.dockerignore` and added `docker image prune -f` after every deployment in `.github/workflows/deploy.yml`. |
 | 6 | **SSH Key Formatting & Non-Interactive Host Verification** | Copying `.pem` keys on Windows can inject `\r` (CRLF) characters, and non-interactive SSH runners stall on interactive host-key confirmation prompts. | Normalized keys with `tr -d '\r'`, enforced strict `chmod 600` permissions with automatic `trap` cleanup, and passed `-o StrictHostKeyChecking=accept-new`. |
-| 7 | **Git Branch Trigger Alignment (`main` vs `master`)** | Existing repository history uses `master` as its default branch while standard CI/CD templates target `main`. | Configured `deploy.yml` to listen on both `main` and `master` under `on.push.branches`, ensuring immediate automation compatibility. |
 
 ---
 
 ## 10. Conclusion & Future Scope
 
-This project successfully migrates a static portfolio web application onto an industry-standard, self-managed **AWS EC2 + Docker + Nginx + GitHub Actions** deployment pipeline. By isolating the web server in an Alpine-based multi-stage Docker container and automating SSH rollouts through GitHub Actions, deployments are deterministic, version-tagged, and recoverable across instance restarts.
+This project successfully deploys a static portfolio web application onto a production-style **Microsoft Azure Virtual Machine (Ubuntu 22.04 LTS) + Docker + Nginx + GitHub Actions** pipeline. By isolating the web server in an Alpine-based multi-stage Docker container and automating SSH rollouts through GitHub Actions, deployments are deterministic, version-tagged, and recoverable across VM restarts.
 
 **Recommended Future Enhancements:**
-- Attach an **AWS Elastic IP** and map a custom domain via **Amazon Route 53** to prevent public IP changes across instance stop/start cycles.
-- Enable **HTTPS (Port 443)** using **Certbot / Let's Encrypt** TLS certificates (or terminate SSL via an AWS Application Load Balancer with ACM) so features like the Web Clipboard API work over encrypted connections.
-- Export container logs and metrics to **Amazon CloudWatch** for centralized uptime monitoring and alerting.
-
+- Assign an **Azure Static Public IP** and map a custom domain via **Azure DNS** so the endpoint never changes across VM deallocation/restart cycles.
+- Enable **HTTPS (Port 443)** using **Certbot / Let's Encrypt** TLS certificates (or terminate SSL via an **Azure Application Gateway**) so features like the Web Clipboard API operate over encrypted HTTPS.
+- Integrate **Azure Monitor** and **Container Logs** for centralized uptime alerting and resource telemetry.
