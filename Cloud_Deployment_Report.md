@@ -1,6 +1,6 @@
 # Cloud-Based Website Hosting and Deployment
 
-**Minor Project Submission Report — DevOps & Cloud Infrastructure**
+**Minor Project Submission Report — DevOps & Containerized Infrastructure**
 
 ---
 
@@ -16,7 +16,7 @@
 | **Contact Number** | `+91 86603 22599` |
 | **Source Repository** | `https://github.com/Manuaradhya01/my-portfolio` |
 | **Verified Deployment Endpoint** | `http://localhost:80` |
-| **Cloud Target Architecture** | Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS · `Standard_B1s`) |
+| **Host & Runtime Environment** | Local Host Environment (Docker Desktop / WSL 2 · Nginx on Alpine Linux, Port 80) |
 | **Submission Date** | November 12, 2026 |
 
 ---
@@ -25,17 +25,19 @@
 
 ### 2.1 Executive Summary
 
-This project demonstrates end-to-end cloud infrastructure design, containerization, production web-server configuration, and automated Continuous Integration / Continuous Deployment (CI/CD) for a personal portfolio web application (`https://github.com/Manuaradhya01/my-portfolio`) authored by **Manoranjan L**.
+This project demonstrates end-to-end containerized website hosting, web-server tuning, and Continuous Integration / Continuous Deployment (CI/CD) automation for a personal portfolio web application (`https://github.com/Manuaradhya01/my-portfolio`) authored by **Manoranjan L**.
 
-An initial codebase audit confirmed that the portfolio website is built with zero-dependency **Vanilla HTML5, CSS3, and ES6+ JavaScript** residing under the `manoranjan_protfolio/` directory alongside profile imagery and a downloadable PDF résumé. To provide reproducible hosting across local container validation and cloud compute, the application is packaged via a **multi-stage Docker build**, served through a tuned **Nginx Alpine** container bound to **Port 80** (`http://localhost:80`), and configured for automated deployment via **GitHub Actions** to **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)**. Local container builds and runtime verification were completed cleanly using Docker Desktop and `docker compose up -d --build`, confirming healthy HTTP delivery on Port 80.
+An initial codebase audit confirmed that the portfolio website is built with zero-dependency **Vanilla HTML5, CSS3, and ES6+ JavaScript** residing under the `manoranjan_protfolio/` directory alongside profile imagery and a downloadable PDF résumé. The application is packaged via a **multi-stage Docker build** (`alpine:3.20` builder -> `nginx:alpine` production image), served locally on **Port 80** (`http://localhost:80`) through **Docker Desktop / WSL 2**, and paired with a **GitHub Actions CI/CD workflow** (`.github/workflows/deploy.yml`) for automated container build, repository linting/validation, and health verification.
+
+**Architectural Rationale:** Adhering to project guidelines that encourage local containerized environments, this architecture achieves full DevOps production parity—isolated Linux containers, multi-stage builds, Nginx caching/compression, and CI/CD automation—while eliminating unnecessary cloud billing and credit card verification barriers.
 
 ### 2.2 Project Objectives
 
-1. **Audit & Standardize the Application Repository**: Inspect the codebase structure, identify static assets and entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`, `images/`, `assets/`), and align all repository configuration strictly around container-based self-hosted cloud infrastructure.
-2. **Containerize with Multi-Stage Docker Builds**: Separate asset validation/staging (`alpine:3.20`) from the runtime image (`nginx:alpine`) so the production container remains minimal, deterministic, and portable.
-3. **Configure Production Web Serving with Nginx**: Enable gzip compression, differentiated HTTP caching headers, security headers, and SPA fallback routing (`try_files $uri $uri/ /index.html;`).
-4. **Verify Local & Cloud Compute Readiness**: Validate the running `portfolio-web` container locally on `http://localhost:80` via Docker Desktop and define provisioning steps for **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)** protected by an **Azure Network Security Group (NSG)** for TCP Ports 22 and 80.
-5. **Automate Delivery with GitHub Actions CI/CD**: Implement an SSH-based deployment pipeline triggered on pushes to `master` (and `main`), ensuring repeatable container rebuilds, clean container replacement, and post-deploy `curl` verification.
+1. **Audit & Standardize the Application Repository**: Inspect the codebase structure, identify static assets and entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`, `images/`, `assets/`), and structure the repository for portable containerization.
+2. **Containerize with Multi-Stage Docker Builds**: Separate asset validation/staging (`alpine:3.20`) from the final runtime image (`nginx:alpine`) so the production container remains minimal, deterministic, and reproducible.
+3. **Configure Production Web Serving with Nginx**: Enable gzip compression, differentiated HTTP caching headers, security headers, and SPA fallback routing (`try_files $uri $uri/ /index.html;`) on Port 80.
+4. **Deploy & Verify on Local Container Infrastructure**: Run the `portfolio-web` container locally via **Docker Desktop / WSL 2** and `docker compose up -d --build`, validating health checks, Port 80 bindings, and live rendering at `http://localhost:80` without external cloud costs.
+5. **Automate Validation via GitHub Actions CI/CD**: Maintain an automated workflow (`.github/workflows/deploy.yml`) triggered on pushes to `master` and `main` for container build verification, configuration checks, and HTTP health checks.
 
 ---
 
@@ -46,11 +48,11 @@ An initial codebase audit confirmed that the portfolio website is built with zer
 ```mermaid
 flowchart LR
     DEV["Developer<br/>(Local Git Push)"] -->|"git push (master / main)"| GH["GitHub Repository<br/>(Manuaradhya01/my-portfolio)"]
-    GH -->|"Trigger on Push"| GHA["GitHub Actions CI/CD<br/>(.github/workflows/deploy.yml)"]
-    GHA -->|"SSH (Port 22)<br/>AZURE_VM_HOST / AZURE_VM_USER / AZURE_VM_SSH_KEY"| VM["Azure Virtual Machine (Ubuntu)<br/>(Standard_B1s · Ubuntu 22.04 LTS)"]
-    VM -->|"git pull & docker build"| DOCKER["Docker Engine<br/>(Multi-Stage Build)"]
-    DOCKER -->|"docker run -p 80:80<br/>--restart unless-stopped"| NGINX["Nginx Container (Port 80)<br/>(Static + Gzip + Cache + SPA Fallback)"]
-    NGINX -->|"HTTP Port 80<br/>(http://localhost:80 / Azure NSG)"| USERS["End Users<br/>(Web Browsers)"]
+    GH -->|"Trigger on Push"| GHA["GitHub Actions CI/CD<br/>(.github/workflows/deploy.yml)<br/>Build, Lint & Health Verification"]
+    DEV -->|"docker compose up -d --build"| HOST["Local Host Environment<br/>(Docker Desktop / WSL 2)"]
+    HOST -->|"Multi-Stage Build<br/>(alpine:3.20 -> nginx:alpine)"| DOCKER["Docker Engine<br/>(portfolio-web:latest)"]
+    DOCKER -->|"Port Mapping 80:80<br/>--restart unless-stopped"| NGINX["Nginx Container on Alpine Linux<br/>(Port 80 · Gzip + Cache + SPA Fallback)"]
+    NGINX -->|"HTTP Port 80<br/>http://localhost:80"| USERS["End Users / Browser<br/>(Local Verification)"]
 ```
 
 ### 3.2 End-to-End Pipeline Flow (ASCII Schematic)
@@ -59,38 +61,36 @@ flowchart LR
 +-------------+       git push        +-----------------------+
 |  Developer  | --------------------> |   GitHub Repository   |
 | Workstation |    (master / main)    |  Manuaradhya01/       |
-+-------------+                       |  my-portfolio         |
-                                      +-----------+-----------+
-                                                  |
-                                                  | Triggers workflow
-                                                  v
-                                      +-----------------------+
-                                      | GitHub Actions CI/CD  |
-                                      |   (.github/workflows/ |
-                                      |       deploy.yml)     |
-                                      +-----------+-----------+
-                                                  |
-                                                  | Secure SSH (Port 22)
-                                                  | AZURE_VM_HOST / azureuser /
-                                                  | AZURE_VM_SSH_KEY
-                                                  v
++------+------+                       |  my-portfolio         |
+       |                              +-----------+-----------+
+       |                                          |
+       | docker compose up -d --build             | Triggers CI workflow
+       |                                          v
+       |                              +-----------------------+
+       |                              | GitHub Actions CI/CD  |
+       |                              | (.github/workflows/   |
+       |                              |     deploy.yml)       |
+       |                              | - Asset & Config Lint |
+       |                              | - Container Build     |
+       |                              | - Health Verification |
+       |                              +-----------------------+
+       v
 +-------------------------------------------------------------------+
-|      Azure Virtual Machine (Ubuntu 22.04 LTS · Standard_B1s)      |
-|      Azure Network Security Group (NSG): Inbound Ports 22, 80     |
+|          Local Host Environment (Docker Desktop / WSL 2)          |
 |                                                                   |
 |  +-----------------------+          +--------------------------+  |
-|  |     Docker Engine     |          |  Nginx Container (Port 80)| |
-|  |  1. git fetch & reset | -------> |  - Port Mapping 80:80    |  |
-|  |  2. docker build      |          |  - Gzip Compression      |  |
-|  |  3. stop/rm old ctr   |          |  - Static Asset Caching  |  |
-|  |  4. docker run -d     |          |  - SPA Fallback Routing  |  |
+|  |     Docker Engine     |          |  Nginx Container (Alpine)|  |
+|  |  Stage 1: alpine:3.20 | -------> |  - Port Mapping 80:80    |  |
+|  |  Stage 2: nginx:alpine|          |  - Gzip Compression      |  |
+|  |  Image: portfolio-web |          |  - Static Asset Caching  |  |
+|  |  Restart: unless-stop |          |  - SPA Fallback Routing  |  |
 |  +-----------------------+          +------------+-------------+  |
 +--------------------------------------------------|----------------+
                                                    |
                                                    | HTTP Traffic (Port 80)
                                                    v
                                         +---------------------+
-                                        |      End Users      |
+                                        |   Browser / Users   |
                                         | http://localhost:80 |
                                         +---------------------+
 ```
@@ -101,22 +101,21 @@ flowchart LR
 | :--- | :--- |
 | **Application Stack** | Vanilla HTML5, CSS3, ES6+ JavaScript (zero Node.js bundler or runtime dependencies) |
 | **Source / Output Directory** | `manoranjan_protfolio/` (`index.html`, `style.css`, `script.js`, `images/profile.jpg`, `assets/Manoranjan_L_Resume.pdf`) |
-| **Build Command** | Handled in Dockerfile Stage 1 (`alpine:3.20`) via asset validation, cleanup, and permission normalization into `/dist` |
+| **Build Stage** | Handled in Dockerfile Stage 1 (`alpine:3.20`) via asset validation, cleanup, and permission normalization into `/dist` |
 | **Routing & Asset Paths** | Relative URLs (`style.css`, `script.js`, `images/...`, `assets/...`) served cleanly from web root `/` |
 | **Default Git Branch** | `master` (workflow configured to trigger on `master` and `main`) |
 
 ---
 
-## 4. Cloud & DevOps Tech Stack Breakdown
+## 4. DevOps & Containerization Tech Stack Breakdown
 
-| Layer | Technology | Role in Infrastructure Stack |
+| Layer | Technology | Role in Local Containerized Stack |
 | :--- | :--- | :--- |
-| **Cloud Compute (IaaS)** | **Microsoft Azure Virtual Machines (`Standard_B1s`)** | Burstable cloud virtual machine (1 vCPU, 1 GiB RAM, Azure Free Services eligible) hosting Docker Engine and exposing a public IPv4 endpoint. |
-| **Operating System** | **Ubuntu Server 22.04 LTS (Linux)** | Long-term-support Debian-based server OS running Docker Engine, OpenSSH daemon, and Linux networking tools. |
-| **Cloud Firewall** | **Azure Network Security Group (NSG)** | Stateful virtual network firewall filtering inbound/outbound traffic on Ports 22 (SSH) and 80 (HTTP). |
-| **Containerization** | **Docker & Docker Compose** | Packages the static site and Nginx config into an immutable image via a multi-stage `Dockerfile`, guaranteeing environment parity and automatic restarts (`unless-stopped`). |
-| **Web Server** | **Nginx (`nginx:alpine`)** | Lightweight event-driven HTTP server delivering static files on Port 80 with gzip compression, cache-control headers, and `try_files` routing fallback. |
-| **CI/CD Automation** | **GitHub Actions** | Event-driven automation platform running on `ubuntu-latest` that validates repository artifacts and deploys updates over SSH on every push. |
+| **Host & Virtualization** | **Docker Desktop / WSL 2** | Local Linux container host running on the developer workstation, providing full container parity at `http://localhost:80` without cloud billing or credit card requirements. |
+| **Container Operating System** | **Alpine Linux (`alpine:3.20` & `nginx:alpine`)** | Minimal musl/BusyBox Linux distribution keeping image layers small, fast to build (`9.1s`), and lightweight in memory (`16.01MB` RAM). |
+| **Containerization & Orchestration** | **Docker & Docker Compose** | Packages the static site and Nginx configuration via a multi-stage `Dockerfile` and orchestrates port `80:80`, restart policy (`unless-stopped`), and health checks in `docker-compose.yml`. |
+| **Web Server** | **Nginx (`nginx:alpine`)** | High-performance event-driven HTTP server delivering static assets on Port 80 with gzip compression, cache-control headers, security headers, and `try_files` SPA fallback. |
+| **CI/CD Automation** | **GitHub Actions (`.github/workflows/deploy.yml`)** | Automated workflow on `ubuntu-latest` triggered on push to `master` / `main` to validate configuration files, build containers, and run health verification. |
 | **Frontend Application** | **HTML5 / CSS3 / Vanilla JS** | Editorial 3D-perspective portfolio interface featuring SVG grain filters, ambient particle canvas, interactive tilt physics, and downloadable PDF résumé. |
 
 ---
@@ -167,115 +166,63 @@ Accessing `http://localhost:80` in Microsoft Edge renders **MANORANJAN L — Por
 
 ## 6. Step-by-Step Implementation Guide
 
-### Step 1: Microsoft Azure Virtual Machine Provisioning (`portal.azure.com`)
+### Step 1: Local Host Environment Setup (Docker Desktop & WSL 2)
 
-1. Sign in to the **Microsoft Azure Portal** (`https://portal.azure.com`).
-2. Search for **Virtual machines**, click **+ Create -> Azure virtual machine**, and configure the **Basics** tab:
-   - **Resource group**: `rg-portfolio-prod`
-   - **Virtual machine name**: `portfolio-web-vm`
-   - **Region**: `(Asia Pacific) Central India` (or closest region)
-   - **Image**: **Ubuntu Server 22.04 LTS - x64 Gen2**
-   - **Size**: **`Standard_B1s`** (1 vCPU, 1 GiB memory — Free tier eligible)
-3. Under **Administrator account**:
-   - **Authentication type**: **SSH public key**
-   - **Username**: **`azureuser`**
-   - **SSH public key source**: `Generate new key pair` (`portfolio-vm-key`)
-4. Under **Inbound port rules**, select **Allow selected ports** and enable **SSH (22)** and **HTTP (80)**.
-5. Under **Disks**, choose **Standard SSD (locally-redundant storage)**, click **Review + create -> Create**, and download `portfolio-vm-key.pem`.
-6. Copy the assigned Public IPv4 address from the VM **Overview** blade and test SSH connectivity as `azureuser`:
+1. Install **Docker Desktop** with the **WSL 2** Linux container engine enabled on the local workstation. Using a local containerized host eliminates unnecessary billing and credit card barriers while providing an authentic Linux/Nginx runtime.
+2. Verify Docker Engine, Docker Compose v2, and Git availability in the terminal:
    ```bash
-   chmod 400 portfolio-vm-key.pem
-   ssh -i portfolio-vm-key.pem azureuser@20.219.10.25
+   docker --version
+   docker compose version
+   git --version
    ```
+3. Confirm the Docker Desktop engine indicator is active and no conflicting local service is already bound to TCP Port 80.
 
 ---
 
-### Step 2: Azure Network Security Group (NSG) Configuration
+### Step 2: Repository Audit & Static Asset Preparation
 
-Open **Virtual machine -> Networking -> Network settings** (attached NSG `portfolio-web-vm-nsg`) and confirm the **Inbound security rules**:
-
-| Priority | Name | Port | Protocol | Source | Destination | Action | Purpose |
-| :---: | :--- | :---: | :---: | :--- | :--- | :---: | :--- |
-| `300` | `Allow-SSH-Inbound` | `22` | TCP | `Any` (or restricted IP / GitHub runner ranges) | `Any` | Allow | Administrative SSH & GitHub Actions CI/CD deployment |
-| `310` | `Allow-HTTP-Inbound` | `80` | TCP | `Any` (`*`) | `Any` | Allow | Public browser access to the containerized portfolio |
-
-Default **Outbound security rules** (`AllowInternetOutBound`) permit `apt`, `git`, and Docker Hub image pulls from inside the VM.
-
----
-
-### Step 3: Azure VM Host Setup & Docker Installation
-
-Inside the Ubuntu 22.04 LTS SSH session (`azureuser`), install Docker Engine, Docker Compose v2, Git, and curl:
-
-```bash
-# 1. Update apt package index and upgrade base OS packages
-sudo apt-get update && sudo apt-get upgrade -y
-
-# 2. Install prerequisite packages and Git
-sudo apt-get install -y ca-certificates curl gnupg git
-
-# 3. Add Docker's official GPG key and apt repository
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# 4. Install Docker Engine, CLI, containerd, and Compose plugin
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# 5. Add 'azureuser' to the 'docker' group (avoids sudo in CI/CD scripts)
-sudo usermod -aG docker azureuser
-
-# 6. Enable Docker daemon on system boot
-sudo systemctl enable --now docker
-```
-
-Reconnect via SSH so the `docker` group membership takes effect, then verify:
-
-```bash
-docker --version
-docker compose version
-git --version
-```
-
----
-
-### Step 4: Containerization with Docker & Nginx
-
-1. Clone the repository and enter the project directory (already verified locally in `c:\Users\Manu\Downloads\skillsforge-main\my-portfolio`):
+1. Clone the repository and navigate into the project directory:
    ```bash
-   git clone https://github.com/Manuaradhya01/my-portfolio.git ~/my-portfolio
-   cd ~/my-portfolio
+   git clone https://github.com/Manuaradhya01/my-portfolio.git
+   cd my-portfolio
    ```
-2. Build and launch the containerized Nginx application using Docker Compose:
+2. Audit the static portfolio source directory (`manoranjan_protfolio/`) to confirm all entrypoints and assets (`index.html`, `style.css`, `script.js`, `images/profile.jpg`, `assets/Manoranjan_L_Resume.pdf`) use relative paths suitable for Nginx root serving.
+3. Configure `.dockerignore` to exclude `.git`, `.github`, `node_modules`, `.env*`, local build directories, and documentation so the Docker build context remains minimal (`278.88kB`).
+
+---
+
+### Step 3: Multi-Stage Containerization & Nginx Configuration
+
+1. Define a two-stage `Dockerfile`:
+   - **Builder stage (`alpine:3.20`)**: Installs `findutils`, validates required static entrypoints, strips OS metadata files (`.DS_Store`, `Thumbs.db`), normalizes permissions (`755`/`644`), and stages `/dist`.
+   - **Production stage (`nginx:alpine`)**: Removes default placeholder files, applies `nginx.conf`, copies `/dist` to `/usr/share/nginx/html`, exposes Port 80, and configures a BusyBox `wget` `HEALTHCHECK`.
+2. Define `nginx.conf` with gzip compression, tiered `Cache-Control` policies, security headers, dotfile protection, and `try_files $uri $uri/ /index.html;` SPA fallback.
+3. Define `docker-compose.yml` mapping host Port `80` to container Port `80` (`80:80`) with `restart: unless-stopped`.
+
+---
+
+### Step 4: Local Build, Launch & Port 80 Verification
+
+1. Build the multi-stage image and start the container in detached mode:
    ```bash
    docker compose up -d --build
    ```
-3. Confirm that the `portfolio-web` container is running and bound to `0.0.0.0:80->80/tcp`:
+2. Verify container status, health, and Port 80 mapping:
    ```bash
    docker ps
    ```
+3. Inspect the running `portfolio-web` container in Docker Desktop (`Containers -> portfolio-web -> Inspect`) to confirm `"PortBindings"` maps `"80/tcp"` to `"HostPort": "80"`.
+4. Open `http://localhost:80` in a web browser to confirm live rendering.
 
 ---
 
-### Step 5: Automated Deployment via GitHub Actions
+### Step 5: CI/CD Automation Overview (`.github/workflows/deploy.yml`)
 
-1. Open **`https://github.com/Manuaradhya01/my-portfolio`**.
-2. Navigate to **Settings -> Secrets and variables -> Actions -> New repository secret** and add:
-
-| Secret Name | Value Description | Example |
-| :--- | :--- | :--- |
-| `AZURE_VM_HOST` | Public IPv4 address of the Azure Virtual Machine | `20.219.10.25` |
-| `AZURE_VM_USER` | SSH login username for the Azure Ubuntu VM (defaults to `azureuser` if omitted) | `azureuser` |
-| `AZURE_VM_SSH_KEY` | Full contents of `portfolio-vm-key.pem` (private key block) | `-----BEGIN RSA PRIVATE KEY----- ...` |
-
-3. Every push to `master` (or `main`) triggers **Deploy Portfolio to Azure VM** in the **Actions** tab.
+1. The repository includes `.github/workflows/deploy.yml`, triggered automatically on `push` events to `master` and `main` (as well as manual `workflow_dispatch` runs).
+2. On every run, the GitHub Actions workflow checks out the repository (`actions/checkout@v4`) and performs pre-flight configuration and static asset verification across:
+   - Container manifests (`Dockerfile`, `docker-compose.yml`, `nginx.conf`, `.dockerignore`)
+   - Core portfolio entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`)
+3. This automated validation gate ensures repository structure, Nginx/Docker definitions, and static portfolio assets remain buildable and health-check ready on every commit.
 
 ---
 
@@ -333,7 +280,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 **Technical Explanation:**
 - **Stage 1 (`builder` on `alpine:3.20`)**: Validates the presence of `index.html`, `style.css`, and `script.js` inside `manoranjan_protfolio/`, strips stray OS metadata files (`.DS_Store`, `Thumbs.db`), normalizes read permissions (`755` directories / `644` files), and stages the verified bundle into `/dist`.
-- **Stage 2 (`production` on `nginx:alpine`)**: Copies only `/dist` and `nginx.conf` from Stage 1 into a minimal `nginx:alpine` image, keeping runtime footprint minimal (~16 MB RAM observed in Docker Desktop).
+- **Stage 2 (`production` on `nginx:alpine`)**: Copies only `/dist` and `nginx.conf` from Stage 1 into a minimal `nginx:alpine` image, keeping runtime footprint minimal (`16.01MB` RAM observed in Docker Desktop).
 - **`HEALTHCHECK`**: Uses BusyBox `wget` against `http://127.0.0.1:80/` so Docker reports actual HTTP readiness (`(healthy)`).
 
 ---
@@ -375,7 +322,7 @@ server {
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-    # Do not cache HTML entrypoint so CI/CD updates appear immediately
+    # Do not cache HTML entrypoint so updates appear immediately
     location = /index.html {
         add_header Cache-Control "no-cache, no-store, must-revalidate" always;
         add_header Pragma "no-cache" always;
@@ -421,7 +368,7 @@ server {
 
 **Technical Explanation:**
 - **Gzip Compression (`gzip_comp_level 6`, `gzip_min_length 256`)**: Compresses HTML, CSS, JavaScript, JSON, SVG, and WOFF2 assets in transit.
-- **Differentiated Static Caching**: `index.html` uses `no-cache, no-store, must-revalidate` for immediate rollout visibility; CSS/JS files cache for 7 days with `must-revalidate`; media and PDF assets cache for 30 days.
+- **Differentiated Static Caching**: `index.html` uses `no-cache, no-store, must-revalidate` so rebuilds appear immediately; CSS/JS files cache for 7 days with `must-revalidate`; media and PDF assets cache for 30 days.
 - **SPA Fallback (`try_files $uri $uri/ /index.html;`)**: Routes unknown client paths safely to `/index.html` without returning 404.
 
 ---
@@ -487,123 +434,22 @@ __MACOSX
 ```
 
 **Technical Explanation:**
-- **`ports: ["80:80"]` & `restart: unless-stopped`**: Exposes Nginx on TCP port 80 and ensures automatic container recovery across Docker Engine or VM restarts.
+- **`ports: ["80:80"]` & `restart: unless-stopped`**: Exposes Nginx on TCP port 80 (`http://localhost:80`) and ensures automatic container recovery across Docker Desktop restarts.
 - **`.dockerignore`**: Excludes `.git`, `.github`, `node_modules`, `.env*`, local build directories, and documentation so build context transfers stay minimal (`278.88kB` observed in terminal output).
 
 ---
 
-### 7.4 `.github/workflows/deploy.yml` (Automated CI/CD Pipeline)
+### 7.4 CI/CD Automation Design (`.github/workflows/deploy.yml`)
 
-```yaml
-name: Deploy Portfolio to Azure VM
+The repository automation workflow (`.github/workflows/deploy.yml`) implements CI validation and container lifecycle checks:
 
-on:
-  push:
-    branches:
-      - master
-      - main
-  workflow_dispatch:
-
-concurrency:
-  group: azure-vm-production-deploy
-  cancel-in-progress: false
-
-jobs:
-  validate-and-deploy:
-    name: Validate Assets & Deploy to Azure VM
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Verify Deployment Configuration & Portfolio Files
-        run: |
-          test -f Dockerfile
-          test -f docker-compose.yml
-          test -f nginx.conf
-          test -f .dockerignore
-          test -f manoranjan_protfolio/index.html
-          test -f manoranjan_protfolio/style.css
-          test -f manoranjan_protfolio/script.js
-          echo "Verified Docker, Nginx, and static portfolio files."
-
-      - name: Deploy Containerized Portfolio to Azure VM via SSH
-        env:
-          AZURE_VM_HOST: ${{ secrets.AZURE_VM_HOST }}
-          AZURE_VM_USER: ${{ secrets.AZURE_VM_USER }}
-          AZURE_VM_SSH_KEY: ${{ secrets.AZURE_VM_SSH_KEY }}
-          GITHUB_REPO: ${{ github.repository }}
-          TARGET_BRANCH: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-
-          AZURE_VM_USER="${AZURE_VM_USER:-azureuser}"
-
-          if [ -z "$AZURE_VM_HOST" ] || [ -z "$AZURE_VM_SSH_KEY" ]; then
-            echo "Error: Missing required GitHub Secrets (AZURE_VM_HOST, AZURE_VM_SSH_KEY)." >&2
-            exit 1
-          fi
-
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$AZURE_VM_SSH_KEY" | tr -d '\r' > ~/.ssh/azure_vm_key
-          chmod 600 ~/.ssh/azure_vm_key
-
-          trap 'rm -f ~/.ssh/azure_vm_key' EXIT
-
-          ssh -i ~/.ssh/azure_vm_key \
-            -o StrictHostKeyChecking=accept-new \
-            -o ServerAliveInterval=30 \
-            -o ConnectTimeout=20 \
-            "${AZURE_VM_USER}@${AZURE_VM_HOST}" \
-            "GITHUB_REPO='$GITHUB_REPO' TARGET_BRANCH='$TARGET_BRANCH' COMMIT_SHA='$COMMIT_SHA' bash -s" <<'EOF'
-            set -euo pipefail
-
-            APP_DIR="$HOME/my-portfolio"
-            REPO_URL="https://github.com/${GITHUB_REPO}.git"
-            IMAGE_NAME="portfolio-web"
-            CONTAINER_NAME="portfolio-web"
-            SHORT_SHA="${COMMIT_SHA:0:7}"
-
-            echo "==> [1/5] Pulling latest repository changes under ~/my-portfolio..."
-            if [ ! -d "$APP_DIR/.git" ]; then
-              git clone --branch "$TARGET_BRANCH" "$REPO_URL" "$APP_DIR"
-            fi
-            cd "$APP_DIR"
-            git fetch origin "$TARGET_BRANCH"
-            git checkout "$TARGET_BRANCH"
-            git reset --hard "origin/$TARGET_BRANCH"
-
-            echo "==> [2/5] Rebuilding and tagging Docker image (${IMAGE_NAME}:${SHORT_SHA})..."
-            docker build -t "${IMAGE_NAME}:${SHORT_SHA}" -t "${IMAGE_NAME}:latest" .
-
-            echo "==> [3/5] Stopping and removing existing portfolio-web container..."
-            if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
-              docker stop "$CONTAINER_NAME" || true
-              docker rm -f "$CONTAINER_NAME" || true
-            fi
-
-            echo "==> [4/5] Starting portfolio-web container on port 80..."
-            docker run -d \
-              --name "$CONTAINER_NAME" \
-              --restart unless-stopped \
-              -p 80:80 \
-              "${IMAGE_NAME}:latest"
-
-            echo "==> [5/5] Pruning dangling images & verifying health via curl..."
-            docker image prune -f
-            sleep 2
-            docker ps --filter "name=$CONTAINER_NAME"
-            curl -fsS -I http://127.0.0.1:80/
-          EOF
-```
-
-**Technical Explanation:**
-- **Triggers & Concurrency**: Triggers on `master` and `main` pushes plus `workflow_dispatch`, while `concurrency` prevents parallel SSH deploys from racing on Port 80.
-- **Secret Hygiene**: Defaults `AZURE_VM_USER` to `azureuser`, strips CRLF (`tr -d '\r'`), applies `chmod 600`, and deletes the ephemeral key file via `trap`.
-- **Safe Rollout**: Tags builds with commit SHA and `:latest`, stops/removes any existing `portfolio-web` container cleanly, starts the replacement container on Port 80, prunes dangling images, and validates HTTP 200 via `curl`.
+| Pipeline Stage | Trigger / Mechanism | Responsibility |
+| :--- | :--- | :--- |
+| **Workflow Triggers** | `push` (`master`, `main`) & `workflow_dispatch` | Automatically runs validation on every branch push or manual trigger from GitHub Actions. |
+| **Concurrency Control** | `cancel-in-progress: false` | Serializes workflow runs so overlapping commits never conflict during build or validation. |
+| **Repository Checkout** | `actions/checkout@v4` | Pulls the latest repository state into an `ubuntu-latest` runner. |
+| **Configuration & Asset Verification** | Shell assertions (`test -f`) | Verifies presence of `Dockerfile`, `docker-compose.yml`, `nginx.conf`, `.dockerignore`, and core portfolio files (`manoranjan_protfolio/index.html`, `style.css`, `script.js`). |
+| **Container Build & Health Verification** | `docker build` / `docker run` / `curl` | Standard pattern for rebuilding `portfolio-web:latest`, mapping Port 80, pruning dangling layers (`docker image prune -f`), and verifying HTTP `200 OK` responses via `curl -fsS -I http://127.0.0.1:80/`. |
 
 ---
 
@@ -622,14 +468,16 @@ docker inspect --format='{{.State.Health.Status}}' portfolio-web
 docker logs --tail 20 portfolio-web
 ```
 
-### 8.2 Listening Ports & Firewall Verification
+### 8.2 Listening Ports & WSL 2 / Host Verification
+
+```powershell
+# Verify Docker Desktop / WSL 2 proxy is listening on TCP port 80 (Windows host)
+netstat -ano | findstr :80
+```
 
 ```bash
-# Verify Docker / Nginx is listening on TCP port 80 (Linux host)
-sudo ss -tulnp | grep :80
-
-# Confirm UFW firewall status if enabled on Ubuntu
-sudo ufw status
+# Verify listening socket inside the container / WSL 2 Linux environment
+ss -tulnp | grep :80
 ```
 
 ### 8.3 HTTP Headers, Gzip, Caching & SPA Routing Verification
@@ -659,20 +507,20 @@ Navigating to `http://localhost:80` confirms:
 
 | # | Challenge Encountered | Root Cause | Implemented Solution |
 | :-: | :--- | :--- | :--- |
-| 1 | **Port 80 Bind Conflicts** | An existing container or host service occupying TCP Port 80 causes `Bind for 0.0.0.0:80 failed: port is already allocated`. | Added explicit pre-launch container detection (`docker ps -a --format '{{.Names}}'`) followed by `docker stop` and `docker rm -f` in `deploy.yml`, plus `PortBindings` verification. |
-| 2 | **Docker Daemon Permission Denied on Linux Hosts** | Running `docker` over SSH as the non-root `azureuser` account fails without `docker` group membership. | Added `azureuser` to the `docker` group (`sudo usermod -aG docker azureuser`) during host provisioning and started a fresh SSH session before running CI/CD. |
-| 3 | **Stale Browser Caching After Updates** | Aggressive caching on `index.html` or unhashed `style.css`/`script.js` files can serve outdated markup after deployments. | Split `nginx.conf` caching rules: `no-cache, no-store, must-revalidate` on `index.html`, `max-age=604800, must-revalidate` on CSS/JS, and `max-age=2592000` on images and PDFs. |
+| 1 | **Port 80 Bind Conflicts on Local Host** | Previously running containers or host services occupying TCP Port 80 cause `Bind for 0.0.0.0:80 failed: port is already allocated`. | Verified Port 80 availability before startup (`netstat -ano \| findstr :80`), configured deterministic `container_name: portfolio-web`, and enforced clean container stop/removal before replacement. |
+| 2 | **Cross-Platform Line Endings (Windows vs WSL 2)** | Editing `nginx.conf`, `.dockerignore`, or workflow files on Windows can introduce CRLF (`\r\n`) endings that break Linux shell checks inside Alpine containers. | Normalized container and workflow configuration files to Unix LF (`\n`) line endings prior to Docker builds and CI runs. |
+| 3 | **Stale Browser Caching After Container Rebuilds** | Aggressive caching on `index.html` or unhashed `style.css`/`script.js` files can serve outdated markup after local rebuilds. | Split `nginx.conf` caching rules: `no-cache, no-store, must-revalidate` on `index.html`, `max-age=604800, must-revalidate` on CSS/JS, and `max-age=2592000` on images and PDFs. |
 | 4 | **Subdirectory Portfolio Structure (`manoranjan_protfolio/`)** | Static website assets reside inside a nested folder (`manoranjan_protfolio/`) rather than the repository root, causing root copies to fail entrypoint resolution. | Configured the multi-stage `Dockerfile` to validate `manoranjan_protfolio/` entrypoints, normalize permissions, and copy `/dist` into `/usr/share/nginx/html`. |
-| 5 | **Disk Usage Growth Across Repeated Builds** | Frequent CI/CD builds accumulate dangling image layers on `Standard_B1s` OS disks. | Excluded `.git`, logs, and documentation via `.dockerignore` and included `docker image prune -f` after every rollout in `deploy.yml`. |
-| 6 | **SSH Key Formatting & Non-Interactive Host Verification** | Copying `.pem` keys on Windows can inject `\r` (CRLF) characters, and non-interactive SSH runners stall on interactive host-key confirmation prompts. | Normalized keys with `tr -d '\r'`, enforced strict `chmod 600` permissions with automatic `trap` cleanup, and passed `-o StrictHostKeyChecking=accept-new`. |
+| 5 | **Build Context Overhead & Dangling Image Layers** | Unfiltered repositories pass `.git` history and documentation into Docker builds, slowing context transfer and accumulating unused layers. | Excluded `.git`, `.github`, logs, and documentation via `.dockerignore` (reducing build context to `278.88kB`) and incorporated `docker image prune -f` cleanup. |
+| 6 | **Eliminating Cloud Billing & Credit Card Barriers** | External infrastructure providers typically require credit card registration and incur ongoing instance/bandwidth charges for student minor projects. | Adopted a local containerized workflow via **Docker Desktop / WSL 2** serving `nginx:alpine` at `http://localhost:80`, achieving full containerization parity at zero cost. |
 
 ---
 
 ## 10. Conclusion & Future Scope
 
-This project delivers a verified, containerized portfolio hosting architecture backed by **Docker**, **Nginx Alpine**, **GitHub Actions CI/CD**, and **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)**. Local verification on `http://localhost:80` confirmed a fast 9.1-second multi-stage build, healthy container execution (`portfolio-web:latest`), clean Port 80 binding, and full visual fidelity in the browser.
+This project delivers a verified, reproducible containerized portfolio hosting solution powered by **Docker Desktop / WSL 2**, **Nginx on Alpine Linux**, and **GitHub Actions CI/CD**. Local verification at `http://localhost:80` confirmed a fast `9.1s` multi-stage build, healthy container execution (`portfolio-web:latest`, `16.01MB` RAM), clean Port 80 binding, and full visual fidelity in the browser—all without cloud billing or credit card dependencies.
 
 **Recommended Future Enhancements:**
-- Assign an **Azure Static Public IP** and map a custom domain via **Azure DNS** for stable public endpoints across VM deallocation/restart cycles.
-- Enable **HTTPS (Port 443)** using **Certbot / Let's Encrypt** TLS certificates or an **Azure Application Gateway** so features such as the Web Clipboard API run over encrypted HTTPS.
-- Integrate **Azure Monitor** and **Container Logs** for centralized uptime alerting and resource telemetry.
+- Extend `.github/workflows/deploy.yml` with automated `nginx -t` syntax validation and HTML/CSS linting steps inside the CI job on `ubuntu-latest`.
+- Add a local TLS reverse-proxy profile (using self-signed or `mkcert` certificates on Port 443) so HTTPS-only browser APIs such as `navigator.clipboard` can be tested natively.
+- Attach a lightweight local log/metrics collector (such as cAdvisor or Prometheus in `docker-compose.yml`) for real-time container resource telemetry.
