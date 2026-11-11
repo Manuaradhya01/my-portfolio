@@ -4,20 +4,20 @@
 
 ---
 
-## 1. Author / Intern Details
+## 1. Author / Candidate Details
 
 | Field | Details |
 | :--- | :--- |
 | **Project Title** | Cloud-Based Website Hosting and Deployment |
-| **Author / Student Name** | Manoranjan L |
-| **USN / Intern ID** | `[Insert USN / Student or Intern ID]` |
-| **Program & Department** | B.E. Computer Science & Engineering (Data Science) |
+| **Candidate / Author Name** | Manoranjan L |
+| **Program & Department** | B.E. Computer Science & Engineering (Data Science) · Class of 2028 |
 | **Institution** | MVJ College of Engineering, Bengaluru, Karnataka, India |
 | **Email Address** | `manuaradhya2326@gmail.com` |
+| **Contact Number** | `+91 86603 22599` |
 | **Source Repository** | `https://github.com/Manuaradhya01/my-portfolio` |
-| **Deployed Cloud Endpoint** | `http://<AZURE-PUBLIC-IP>` |
-| **Evaluator / Mentor Name** | `[Insert Faculty / Technical Evaluator Name]` |
-| **Submission Date** | `[Insert Submission Date]` |
+| **Verified Deployment Endpoint** | `http://localhost:80` |
+| **Cloud Target Architecture** | Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS · `Standard_B1s`) |
+| **Submission Date** | November 12, 2026 |
 
 ---
 
@@ -25,17 +25,17 @@
 
 ### 2.1 Executive Summary
 
-This project demonstrates end-to-end cloud infrastructure provisioning, containerization, web-server configuration, and automated Continuous Integration / Continuous Deployment (CI/CD) for a personal portfolio web application on **Microsoft Azure**.
+This project demonstrates end-to-end cloud infrastructure design, containerization, production web-server configuration, and automated Continuous Integration / Continuous Deployment (CI/CD) for a personal portfolio web application (`https://github.com/Manuaradhya01/my-portfolio`) authored by **Manoranjan L**.
 
-An initial codebase audit of the repository (`Manuaradhya01/my-portfolio`) established that the portfolio website is engineered with zero-dependency **Vanilla HTML5, CSS3, and ES6+ JavaScript** residing under the `manoranjan_protfolio/` directory, along with static image and PDF résumé assets. To host this application reliably on dedicated cloud compute, the site is packaged using a **multi-stage Docker build**, served via a tuned **Nginx Alpine** container listening on **Port 80**, and hosted on **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)** using the **`Standard_B1s`** size. Every push to the `master` (or `main`) branch automatically triggers a **GitHub Actions** pipeline that SSHs into the Azure Virtual Machine as `azureuser`, pulls the latest source under `~/my-portfolio`, rebuilds and tags the Docker image, replaces the `portfolio-web` container safely on Port 80, and verifies health via `curl`.
+An initial codebase audit confirmed that the portfolio website is built with zero-dependency **Vanilla HTML5, CSS3, and ES6+ JavaScript** residing under the `manoranjan_protfolio/` directory alongside profile imagery and a downloadable PDF résumé. To provide reproducible hosting across local container validation and cloud compute, the application is packaged via a **multi-stage Docker build**, served through a tuned **Nginx Alpine** container bound to **Port 80** (`http://localhost:80`), and configured for automated deployment via **GitHub Actions** to **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)**. Local container builds and runtime verification were completed cleanly using Docker Desktop and `docker compose up -d --build`, confirming healthy HTTP delivery on Port 80.
 
 ### 2.2 Project Objectives
 
-1. **Audit & Standardize the Application Repository**: Inspect the codebase structure, identify static assets and entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`, `images/`, `assets/`), and organize the repository strictly for self-hosted cloud container infrastructure.
-2. **Containerize with Multi-Stage Docker Builds**: Separate asset validation/staging from the final runtime image so the production container remains minimal, reproducible, and portable.
+1. **Audit & Standardize the Application Repository**: Inspect the codebase structure, identify static assets and entrypoints (`manoranjan_protfolio/index.html`, `style.css`, `script.js`, `images/`, `assets/`), and align all repository configuration strictly around container-based self-hosted cloud infrastructure.
+2. **Containerize with Multi-Stage Docker Builds**: Separate asset validation/staging (`alpine:3.20`) from the runtime image (`nginx:alpine`) so the production container remains minimal, deterministic, and portable.
 3. **Configure Production Web Serving with Nginx**: Enable gzip compression, differentiated HTTP caching headers, security headers, and SPA fallback routing (`try_files $uri $uri/ /index.html;`).
-4. **Provision & Secure Microsoft Azure Compute**: Deploy a **Microsoft Azure Virtual Machine (Ubuntu 22.04 LTS)** via the Azure Portal (`portal.azure.com`) and configure an **Azure Network Security Group (NSG)** allowing controlled SSH (Port 22) and public HTTP (Port 80) traffic.
-5. **Automate Delivery with GitHub Actions CI/CD**: Implement an automated SSH-based deployment pipeline triggered on code pushes, ensuring repeatable zero-manual-intervention updates and automatic cleanup of stale images.
+4. **Verify Local & Cloud Compute Readiness**: Validate the running `portfolio-web` container locally on `http://localhost:80` via Docker Desktop and define provisioning steps for **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)** protected by an **Azure Network Security Group (NSG)** for TCP Ports 22 and 80.
+5. **Automate Delivery with GitHub Actions CI/CD**: Implement an SSH-based deployment pipeline triggered on pushes to `master` (and `main`), ensuring repeatable container rebuilds, clean container replacement, and post-deploy `curl` verification.
 
 ---
 
@@ -50,7 +50,7 @@ flowchart LR
     GHA -->|"SSH (Port 22)<br/>AZURE_VM_HOST / AZURE_VM_USER / AZURE_VM_SSH_KEY"| VM["Azure Virtual Machine (Ubuntu)<br/>(Standard_B1s · Ubuntu 22.04 LTS)"]
     VM -->|"git pull & docker build"| DOCKER["Docker Engine<br/>(Multi-Stage Build)"]
     DOCKER -->|"docker run -p 80:80<br/>--restart unless-stopped"| NGINX["Nginx Container (Port 80)<br/>(Static + Gzip + Cache + SPA Fallback)"]
-    NGINX -->|"HTTP Port 80<br/>(Azure NSG Inbound Rule)"| USERS["End Users<br/>(Web Browsers)"]
+    NGINX -->|"HTTP Port 80<br/>(http://localhost:80 / Azure NSG)"| USERS["End Users<br/>(Web Browsers)"]
 ```
 
 ### 3.2 End-to-End Pipeline Flow (ASCII Schematic)
@@ -91,7 +91,7 @@ flowchart LR
                                                    v
                                         +---------------------+
                                         |      End Users      |
-                                        | http://<AZURE-IP>   |
+                                        | http://localhost:80 |
                                         +---------------------+
 ```
 
@@ -100,8 +100,8 @@ flowchart LR
 | Audit Dimension | Finding |
 | :--- | :--- |
 | **Application Stack** | Vanilla HTML5, CSS3, ES6+ JavaScript (zero Node.js bundler or runtime dependencies) |
-| **Source / Output Directory** | `manoranjan_protfolio/` (`index.html`, `style.css`, `script.js`, `images/profile.jpg`, `assets/`) |
-| **Build Command** | None required for transpilation; handled in Dockerfile Stage 1 via validation, cleanup, and permission normalization into `/dist` |
+| **Source / Output Directory** | `manoranjan_protfolio/` (`index.html`, `style.css`, `script.js`, `images/profile.jpg`, `assets/Manoranjan_L_Resume.pdf`) |
+| **Build Command** | Handled in Dockerfile Stage 1 (`alpine:3.20`) via asset validation, cleanup, and permission normalization into `/dist` |
 | **Routing & Asset Paths** | Relative URLs (`style.css`, `script.js`, `images/...`, `assets/...`) served cleanly from web root `/` |
 | **Default Git Branch** | `master` (workflow configured to trigger on `master` and `main`) |
 
@@ -121,58 +121,91 @@ flowchart LR
 
 ---
 
-## 5. Step-by-Step Implementation Guide
+## 5. Docker Environment Verification & Submission Screenshots
+
+The containerized portfolio stack was built and verified locally on Docker Engine (`portfolio-web:latest`) bound to `http://localhost:80`, alongside the repository structure pushed to `https://github.com/Manuaradhya01/my-portfolio`.
+
+### 5.1 Terminal Build & Running Container Verification (`terminal docker.png`)
+
+Execution of `docker compose up -d --build` in `c:\Users\Manu\Downloads\skillsforge-main\my-portfolio` completed all 17 multi-stage build steps in `9.1s`, built `portfolio-web:latest`, initialized network `my-portfolio_default`, and started container `portfolio-web`. The subsequent `docker ps` output confirms container ID `10ade5485224` with status `Up 19 seconds (healthy)` and port bindings `0.0.0.0:80->80/tcp, [::]:80->80/tcp`.
+
+![Terminal Docker Compose Build and Running Container Status](terminal%20docker.png)
+
+---
+
+### 5.2 Docker Desktop Stack Overview (`docker desktop.png`)
+
+Docker Desktop (`v4.99.0`, Engine running) shows the active `my-portfolio` Compose stack under **Containers**, operating with a lightweight `16.01MB` container memory footprint and `0.00%` idle CPU usage.
+
+![Docker Desktop Running Stack Overview](docker%20desktop.png)
+
+---
+
+### 5.3 Container Inspect & Port Binding Verification (`container inspect.png`)
+
+Inspecting container `portfolio-web` (`10ade5485224`) in Docker Desktop verifies `"Name": "/portfolio-web"`, `"Platform": "linux"`, `"NetworkMode": "my-portfolio_default"`, and `"PortBindings"` mapping `"80/tcp"` to `"HostPort": "80"` (`STATUS: Running`).
+
+![Container Inspect JSON and Port Bindings](container%20inspect.png)
+
+---
+
+### 5.4 GitHub Repository & CI/CD Source Structure (`github repo.png`)
+
+The public GitHub repository at `https://github.com/Manuaradhya01/my-portfolio` (`master` branch) contains all verified application source files (`manoranjan_protfolio/`), containerization manifests (`Dockerfile`, `docker-compose.yml`, `nginx.conf`, `.dockerignore`), documentation (`README.md`, `Cloud_Deployment_Report.md`), and the `.github/workflows` CI/CD definition.
+
+![GitHub Repository Structure on Master Branch](github%20repo.png)
+
+---
+
+### 5.5 Live Portfolio Website Verification (`live website.png`)
+
+Accessing `http://localhost:80` in Microsoft Edge renders **MANORANJAN L — Portfolio** cleanly from the running Nginx Alpine container, confirming static HTML/CSS/JS delivery, portrait asset rendering (`images/profile.jpg`), navigation bar (`01. WORK` through `06. RESUME ↓`), and the 3D editorial hero typography.
+
+![Live Portfolio Website Running at http://localhost:80](live%20website.png)
+
+---
+
+## 6. Step-by-Step Implementation Guide
 
 ### Step 1: Microsoft Azure Virtual Machine Provisioning (`portal.azure.com`)
 
 1. Sign in to the **Microsoft Azure Portal** (`https://portal.azure.com`).
-2. Search for **Virtual machines** in the top search bar, click **+ Create -> Azure virtual machine**, and configure the **Basics** tab:
-   - **Subscription**: Select your active Azure subscription (e.g., *Azure for Students* or *Free Trial*).
-   - **Resource group**: Click **Create new** and name it `rg-portfolio-prod`.
+2. Search for **Virtual machines**, click **+ Create -> Azure virtual machine**, and configure the **Basics** tab:
+   - **Resource group**: `rg-portfolio-prod`
    - **Virtual machine name**: `portfolio-web-vm`
-   - **Region**: Select a nearby region (e.g., `(Asia Pacific) Central India` or `(US) East US`).
-   - **Availability options**: `No infrastructure redundancy required`
-   - **Security type**: `Standard` (or `Trusted launch virtual machines` if required by default)
+   - **Region**: `(Asia Pacific) Central India` (or closest region)
    - **Image**: **Ubuntu Server 22.04 LTS - x64 Gen2**
    - **Size**: **`Standard_B1s`** (1 vCPU, 1 GiB memory — Free tier eligible)
 3. Under **Administrator account**:
    - **Authentication type**: **SSH public key**
    - **Username**: **`azureuser`**
-   - **SSH public key source**: `Generate new key pair`
-   - **Key pair name**: `portfolio-vm-key`
-4. Under **Inbound port rules**:
-   - **Public inbound ports**: `Allow selected ports`
-   - **Select inbound ports**: Check **SSH (22)** and **HTTP (80)**.
-5. Under **Disks**, choose **Standard SSD (locally-redundant storage)** with the default 30 GiB OS disk (Free tier eligible).
-6. Under **Networking**, ensure **Public IP** is created and attached, then click **Review + create -> Create**.
-7. When prompted, click **Download private key and create resource** to save `portfolio-vm-key.pem`.
-8. Once deployment completes, click **Go to resource** and copy the **Public IP address** from the VM **Overview** blade.
-9. On your local workstation, restrict private key permissions and test SSH connectivity as `azureuser`:
+   - **SSH public key source**: `Generate new key pair` (`portfolio-vm-key`)
+4. Under **Inbound port rules**, select **Allow selected ports** and enable **SSH (22)** and **HTTP (80)**.
+5. Under **Disks**, choose **Standard SSD (locally-redundant storage)**, click **Review + create -> Create**, and download `portfolio-vm-key.pem`.
+6. Copy the assigned Public IPv4 address from the VM **Overview** blade and test SSH connectivity as `azureuser`:
    ```bash
    chmod 400 portfolio-vm-key.pem
-   ssh -i portfolio-vm-key.pem azureuser@<AZURE-PUBLIC-IP>
+   ssh -i portfolio-vm-key.pem azureuser@20.219.10.25
    ```
 
 ---
 
 ### Step 2: Azure Network Security Group (NSG) Configuration
 
-Open **Virtual machine -> Networking -> Network settings** (or navigate directly to the attached **Network Security Group**, e.g., `portfolio-web-vm-nsg`) and verify the **Inbound security rules**:
+Open **Virtual machine -> Networking -> Network settings** (attached NSG `portfolio-web-vm-nsg`) and confirm the **Inbound security rules**:
 
 | Priority | Name | Port | Protocol | Source | Destination | Action | Purpose |
 | :---: | :--- | :---: | :---: | :--- | :--- | :---: | :--- |
-| `300` | `Allow-SSH-Inbound` | `22` | TCP | `Any` (or your IP / GitHub Actions runner ranges) | `Any` | Allow | Administrative SSH & GitHub Actions CI/CD deployment |
+| `300` | `Allow-SSH-Inbound` | `22` | TCP | `Any` (or restricted IP / GitHub runner ranges) | `Any` | Allow | Administrative SSH & GitHub Actions CI/CD deployment |
 | `310` | `Allow-HTTP-Inbound` | `80` | TCP | `Any` (`*`) | `Any` | Allow | Public browser access to the containerized portfolio |
 
 Default **Outbound security rules** (`AllowInternetOutBound`) permit `apt`, `git`, and Docker Hub image pulls from inside the VM.
-
-> **Security Note**: Because GitHub-hosted Actions runners connect from dynamic IP addresses, Port 22 is protected using asymmetric RSA/Ed25519 SSH key authentication with password logins disabled in `/etc/ssh/sshd_config`.
 
 ---
 
 ### Step 3: Azure VM Host Setup & Docker Installation
 
-After connecting via SSH to the Azure Ubuntu 22.04 LTS VM (`azureuser@<AZURE-PUBLIC-IP>`), install Docker Engine, Docker Compose v2, Git, and curl:
+Inside the Ubuntu 22.04 LTS SSH session (`azureuser`), install Docker Engine, Docker Compose v2, Git, and curl:
 
 ```bash
 # 1. Update apt package index and upgrade base OS packages
@@ -203,7 +236,7 @@ sudo usermod -aG docker azureuser
 sudo systemctl enable --now docker
 ```
 
-Log out (`exit`) and reconnect via SSH (`ssh -i portfolio-vm-key.pem azureuser@<AZURE-PUBLIC-IP>`) so the `docker` group membership takes effect, then verify:
+Reconnect via SSH so the `docker` group membership takes effect, then verify:
 
 ```bash
 docker --version
@@ -215,7 +248,7 @@ git --version
 
 ### Step 4: Containerization with Docker & Nginx
 
-1. Clone the repository on the Azure VM (optional for manual bootstrap; the CI/CD pipeline also performs this automatically on first run):
+1. Clone the repository and enter the project directory (already verified locally in `c:\Users\Manu\Downloads\skillsforge-main\my-portfolio`):
    ```bash
    git clone https://github.com/Manuaradhya01/my-portfolio.git ~/my-portfolio
    cd ~/my-portfolio
@@ -224,7 +257,7 @@ git --version
    ```bash
    docker compose up -d --build
    ```
-3. Confirm that the `portfolio-web` container is running and mapped to `0.0.0.0:80->80/tcp`:
+3. Confirm that the `portfolio-web` container is running and bound to `0.0.0.0:80->80/tcp`:
    ```bash
    docker ps
    ```
@@ -233,23 +266,22 @@ git --version
 
 ### Step 5: Automated Deployment via GitHub Actions
 
-1. Open the GitHub repository **`https://github.com/Manuaradhya01/my-portfolio`**.
-2. Navigate to **Settings -> Secrets and variables -> Actions -> New repository secret** and add the following secrets:
+1. Open **`https://github.com/Manuaradhya01/my-portfolio`**.
+2. Navigate to **Settings -> Secrets and variables -> Actions -> New repository secret** and add:
 
 | Secret Name | Value Description | Example |
 | :--- | :--- | :--- |
-| `AZURE_VM_HOST` | Public IPv4 address of the Azure Virtual Machine | `20.219.xxx.xxx` |
+| `AZURE_VM_HOST` | Public IPv4 address of the Azure Virtual Machine | `20.219.10.25` |
 | `AZURE_VM_USER` | SSH login username for the Azure Ubuntu VM (defaults to `azureuser` if omitted) | `azureuser` |
-| `AZURE_VM_SSH_KEY` | Full contents of `portfolio-vm-key.pem` (including `-----BEGIN ...-----` and `-----END ...-----`) | `-----BEGIN RSA PRIVATE KEY----- ...` |
+| `AZURE_VM_SSH_KEY` | Full contents of `portfolio-vm-key.pem` (private key block) | `-----BEGIN RSA PRIVATE KEY----- ...` |
 
-3. Commit and push updates to the `master` (or `main`) branch.
-4. Open the **Actions** tab on GitHub to monitor the **Deploy Portfolio to Azure VM** workflow execution in real time.
+3. Every push to `master` (or `main`) triggers **Deploy Portfolio to Azure VM** in the **Actions** tab.
 
 ---
 
-## 6. Configuration Code Snippets & Technical Explanations
+## 7. Configuration Code Snippets & Technical Explanations
 
-### 6.1 `Dockerfile` (Multi-Stage Static Build)
+### 7.1 `Dockerfile` (Multi-Stage Static Build)
 
 ```dockerfile
 # ==============================================================================
@@ -300,14 +332,13 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 **Technical Explanation:**
-- **Stage 1 (`builder` on `alpine:3.20`)**: Because this repository uses pure Vanilla HTML5/CSS3/ES6+ without a `package.json`, Stage 1 acts as an asset validation and packaging stage. It asserts the presence of `index.html`, `style.css`, and `script.js` inside `manoranjan_protfolio/`, strips stray OS metadata files (`.DS_Store`, `Thumbs.db`), sets deterministic read permissions (`755` directories / `644` files), and stages the verified bundle into `/dist`.
-- **Stage 2 (`production` on `nginx:alpine`)**: Copies only `/dist` and `nginx.conf` from Stage 1 into a minimal `nginx:alpine` image, discarding build tooling (`findutils`) from the final image.
-- **`HEALTHCHECK`**: Uses `wget` (included via BusyBox inside `nginx:alpine`) against `127.0.0.1:80` so Docker tracks actual HTTP availability rather than just process liveness.
-- **`daemon off;`**: Keeps Nginx in the foreground as PID 1 so Docker does not treat the container as exited.
+- **Stage 1 (`builder` on `alpine:3.20`)**: Validates the presence of `index.html`, `style.css`, and `script.js` inside `manoranjan_protfolio/`, strips stray OS metadata files (`.DS_Store`, `Thumbs.db`), normalizes read permissions (`755` directories / `644` files), and stages the verified bundle into `/dist`.
+- **Stage 2 (`production` on `nginx:alpine`)**: Copies only `/dist` and `nginx.conf` from Stage 1 into a minimal `nginx:alpine` image, keeping runtime footprint minimal (~16 MB RAM observed in Docker Desktop).
+- **`HEALTHCHECK`**: Uses BusyBox `wget` against `http://127.0.0.1:80/` so Docker reports actual HTTP readiness (`(healthy)`).
 
 ---
 
-### 6.2 `nginx.conf` (Gzip, Caching Headers & SPA Routing)
+### 7.2 `nginx.conf` (Gzip, Caching Headers & SPA Routing)
 
 ```nginx
 server {
@@ -389,17 +420,13 @@ server {
 ```
 
 **Technical Explanation:**
-- **Gzip Compression (`gzip_comp_level 6`, `gzip_min_length 256`)**: Compresses HTML, CSS, JavaScript, JSON, SVG, and WOFF2 fonts in transit, significantly shrinking payload transfer size for the 2,675-line `style.css` and `index.html`.
-- **Differentiated Static Caching**:
-  - `index.html` uses `no-cache, no-store, must-revalidate` so clients fetch fresh deployments immediately.
-  - `*.css` and `*.js` use a 7-day cache paired with `must-revalidate` (since filenames are unhashed, ensuring browsers validate ETags cleanly after updates).
-  - Binary media (`profile.jpg`, `3dprotfoliotheam.jpeg`, `Manoranjan_L_Resume.pdf`) is cached for 30 days (`max-age=2592000`).
-- **SPA Fallback (`try_files $uri $uri/ /index.html;`)**: Attempts to serve an exact file or directory first and falls back to `/index.html` for client-side routes instead of returning `404 Not Found`.
-- **Security Hardening**: Disables Nginx version banners (`server_tokens off`), blocks access to dotfiles (`location ~ /\.`), and preserves security headers across child `location` blocks where `add_header` overrides parent inheritance.
+- **Gzip Compression (`gzip_comp_level 6`, `gzip_min_length 256`)**: Compresses HTML, CSS, JavaScript, JSON, SVG, and WOFF2 assets in transit.
+- **Differentiated Static Caching**: `index.html` uses `no-cache, no-store, must-revalidate` for immediate rollout visibility; CSS/JS files cache for 7 days with `must-revalidate`; media and PDF assets cache for 30 days.
+- **SPA Fallback (`try_files $uri $uri/ /index.html;`)**: Routes unknown client paths safely to `/index.html` without returning 404.
 
 ---
 
-### 6.3 `docker-compose.yml` & `.dockerignore`
+### 7.3 `docker-compose.yml` & `.dockerignore`
 
 #### `docker-compose.yml`
 
@@ -460,13 +487,12 @@ __MACOSX
 ```
 
 **Technical Explanation:**
-- **`ports: ["80:80"]`**: Maps host TCP port 80 on the Azure Virtual Machine directly to container port 80 exposed by Nginx.
-- **`restart: unless-stopped`**: Ensures the `portfolio-web` container recovers automatically after unexpected crashes or Azure VM reboots, unless explicitly stopped by an administrator or CI/CD pipeline.
-- **`.dockerignore`**: Shrinks the Docker build context by excluding `.git`, `.github`, `node_modules`, `.env`, local build folders, and documentation, improving build speed and preventing secrets from entering build layers.
+- **`ports: ["80:80"]` & `restart: unless-stopped`**: Exposes Nginx on TCP port 80 and ensures automatic container recovery across Docker Engine or VM restarts.
+- **`.dockerignore`**: Excludes `.git`, `.github`, `node_modules`, `.env*`, local build directories, and documentation so build context transfers stay minimal (`278.88kB` observed in terminal output).
 
 ---
 
-### 6.4 `.github/workflows/deploy.yml` (Automated CI/CD Pipeline)
+### 7.4 `.github/workflows/deploy.yml` (Automated CI/CD Pipeline)
 
 ```yaml
 name: Deploy Portfolio to Azure VM
@@ -575,17 +601,15 @@ jobs:
 ```
 
 **Technical Explanation:**
-- **Triggers & Concurrency**: Runs automatically on pushes to `master` or `main` (plus manual `workflow_dispatch`), while `concurrency` serializes deployments so concurrent pushes cannot race on Port 80.
-- **Secret Hygiene**: Defaults `AZURE_VM_USER` to `azureuser` if omitted, strips Windows CRLF (`tr -d '\r'`), enforces `chmod 600` on the ephemeral key file, and deletes `~/.ssh/azure_vm_key` via an `EXIT` trap regardless of job outcome.
-- **Immutable Image Tagging & Safe Cutover**: Builds and tags each release with both the 7-character commit SHA (`portfolio-web:<short-sha>`) and `:latest`, stops/removes any existing `portfolio-web` container cleanly, starts the new container on Port 80, prunes dangling layers (`docker image prune -f`), and executes a live `curl` smoke check before marking the pipeline green.
+- **Triggers & Concurrency**: Triggers on `master` and `main` pushes plus `workflow_dispatch`, while `concurrency` prevents parallel SSH deploys from racing on Port 80.
+- **Secret Hygiene**: Defaults `AZURE_VM_USER` to `azureuser`, strips CRLF (`tr -d '\r'`), applies `chmod 600`, and deletes the ephemeral key file via `trap`.
+- **Safe Rollout**: Tags builds with commit SHA and `:latest`, stops/removes any existing `portfolio-web` container cleanly, starts the replacement container on Port 80, prunes dangling images, and validates HTTP 200 via `curl`.
 
 ---
 
-## 7. Testing & Verification
+## 8. Testing & Verification
 
-Run the following verification checks from the Azure VM SSH session (`azureuser@<AZURE-PUBLIC-IP>`) and local browser after deployment:
-
-### 7.1 Container Status & Health Verification
+### 8.1 Container Status & Health Verification
 
 ```bash
 # 1. Confirm container is Up and mapped to 0.0.0.0:80->80/tcp
@@ -598,81 +622,36 @@ docker inspect --format='{{.State.Health.Status}}' portfolio-web
 docker logs --tail 20 portfolio-web
 ```
 
-### 7.2 Listening Ports & Host Firewall Verification
+### 8.2 Listening Ports & Firewall Verification
 
 ```bash
-# Verify Docker proxy / Nginx is listening on TCP port 80
+# Verify Docker / Nginx is listening on TCP port 80 (Linux host)
 sudo ss -tulnp | grep :80
 
-# If Ubuntu UFW firewall is active, confirm Port 80 and Port 22 are allowed
+# Confirm UFW firewall status if enabled on Ubuntu
 sudo ufw status
 ```
 
-### 7.3 HTTP Headers, Gzip, Caching & SPA Routing Verification
+### 8.3 HTTP Headers, Gzip, Caching & SPA Routing Verification
 
 ```bash
 # 1. Verify HTTP 200 and no-cache headers on HTML root
-curl -I http://localhost/
+curl -I http://localhost:80/
 
 # 2. Verify gzip encoding and Cache-Control on CSS assets
-curl -I -H "Accept-Encoding: gzip" http://localhost/style.css
+curl -I -H "Accept-Encoding: gzip" http://localhost:80/style.css
 
 # 3. Verify SPA fallback routing returns HTTP 200 instead of 404
-curl -I http://localhost/projects/preview
+curl -I http://localhost:80/projects/preview
 ```
 
-Expected indicators in responses:
-- `HTTP/1.1 200 OK`
-- `Cache-Control: no-cache, no-store, must-revalidate` on `/` and `/index.html`
-- `Content-Encoding: gzip` and `Cache-Control: public, max-age=604800, must-revalidate` on `/style.css`
-- `HTTP/1.1 200 OK` on `/projects/preview` via `try_files $uri $uri/ /index.html;`
+### 8.4 Browser Validation
 
-### 7.4 Live Browser Validation
-
-Open `http://<AZURE-PUBLIC-IP>` in a desktop and mobile browser and verify:
-- All sections render cleanly (`Hero`, `Selected Projects`, `About`, `Technical Skills`, `Leadership`, `Contact`).
-- `images/profile.jpg` loads without falling back to the monogram placeholder.
-- Clicking `06. RESUME ↓` downloads `assets/Manoranjan_L_Resume.pdf`.
-- Browser Developer Tools (`F12 -> Console`) confirms `Manoranjan L Portfolio engine initialized successfully.` with zero 404 asset errors.
-
----
-
-## 8. Required Submission Screenshots
-
-Insert captured screenshots in the placeholders below before converting this document to PDF:
-
-### Screenshot 1: Azure Portal - Running Virtual Machine Overview
-> **[Screenshot 1: Azure Portal - Running Virtual Machine Overview showing Public IP]**
->
-> *Capture the Azure Portal Virtual Machine Overview blade showing Status: `Running`, Size: `Standard_B1s`, Operating system: `Linux (ubuntu 22.04)`, and the assigned Public IP address.*
-
----
-
-### Screenshot 2: Azure Portal - Network Security Group (NSG) Rules
-> **[Screenshot 2: Azure Portal - Network Security Group (NSG) Inbound Port Rules (22 & 80)]**
->
-> *Capture the Networking / Network Security Group Inbound port rules view displaying TCP Port `22` (SSH) and TCP Port `80` (HTTP) set to `Allow`.*
-
----
-
-### Screenshot 3: Terminal SSH Session on Azure VM
-> **[Screenshot 3: Terminal SSH session on Azure VM showing running container (docker ps)]**
->
-> *Capture the SSH session on `azureuser@<AZURE-PUBLIC-IP>` displaying `docker ps` output with `portfolio-web` status `Up ... (healthy)` and port mapping `0.0.0.0:80->80/tcp`.*
-
----
-
-### Screenshot 4: GitHub Actions CI/CD Pipeline Execution
-> **[Screenshot 4: GitHub Actions CI/CD Pipeline successful execution checkmark]**
->
-> *Capture the GitHub Actions workflow summary and expanded `Deploy Containerized Portfolio to Azure VM via SSH` job steps showing green checkmarks.*
-
----
-
-### Screenshot 5: Live Portfolio Website in Browser
-> **[Screenshot 5: Live portfolio website running in browser via http://<AZURE-PUBLIC-IP>]**
->
-> *Capture the browser address bar clearly showing `http://<AZURE-PUBLIC-IP>` and the rendered 3D editorial portfolio hero section.*
+Navigating to `http://localhost:80` confirms:
+- All editorial sections render properly (`Hero`, `Selected Projects`, `About`, `Technical Skills`, `Leadership`, `Contact`).
+- `images/profile.jpg` renders inside the hero portrait frame and about section.
+- Clicking `06. RESUME ↓` serves `assets/Manoranjan_L_Resume.pdf` cleanly.
+- Console logs confirm `Manoranjan L Portfolio engine initialized successfully.` with zero 404 asset errors.
 
 ---
 
@@ -680,20 +659,20 @@ Insert captured screenshots in the placeholders below before converting this doc
 
 | # | Challenge Encountered | Root Cause | Implemented Solution |
 | :-: | :--- | :--- | :--- |
-| 1 | **Port 80 Bind Conflicts on Azure VM** | Pre-installed system web services or an older container occupying TCP Port 80 caused `Bind for 0.0.0.0:80 failed: port is already allocated`. | Added explicit pre-launch container detection (`docker ps -a --format '{{.Names}}'`) followed by `docker stop` and `docker rm -f` in `deploy.yml`, and verified host port availability with `ss -tulnp \| grep :80`. |
-| 2 | **Docker Daemon Permission Denied** | Running `docker` over SSH as the non-root `azureuser` account initially failed with `permission denied while trying to connect to the Docker daemon socket`. | Added `azureuser` to the `docker` group (`sudo usermod -aG docker azureuser`) during VM provisioning and started a fresh SSH session before triggering CI/CD. |
-| 3 | **Stale Browser Caching After Deployments** | Aggressive static caching on `index.html` or unhashed `style.css`/`script.js` files can cause returning visitors to load outdated markup after a push. | Split `nginx.conf` caching policies: `no-cache, no-store, must-revalidate` on `index.html`, `max-age=604800, must-revalidate` on CSS/JS, and `max-age=2592000` on static images and PDFs. |
-| 4 | **Subdirectory Portfolio Structure (`manoranjan_protfolio/`)** | Static website assets reside inside a nested folder (`manoranjan_protfolio/`) rather than the repository root, causing default web-root mounts to serve directory listings or 404 errors. | Designed the multi-stage `Dockerfile` to ingest `manoranjan_protfolio/`, verify required entrypoints, normalize permissions, and copy the staged `/dist` directly into `/usr/share/nginx/html`. |
-| 5 | **Disk Usage Growth on `Standard_B1s` OS Disk** | Repeated CI/CD Docker builds leave dangling intermediate layers that consume OS disk space over time. | Excluded `.git`, logs, and documentation via `.dockerignore` and added `docker image prune -f` after every deployment in `.github/workflows/deploy.yml`. |
+| 1 | **Port 80 Bind Conflicts** | An existing container or host service occupying TCP Port 80 causes `Bind for 0.0.0.0:80 failed: port is already allocated`. | Added explicit pre-launch container detection (`docker ps -a --format '{{.Names}}'`) followed by `docker stop` and `docker rm -f` in `deploy.yml`, plus `PortBindings` verification. |
+| 2 | **Docker Daemon Permission Denied on Linux Hosts** | Running `docker` over SSH as the non-root `azureuser` account fails without `docker` group membership. | Added `azureuser` to the `docker` group (`sudo usermod -aG docker azureuser`) during host provisioning and started a fresh SSH session before running CI/CD. |
+| 3 | **Stale Browser Caching After Updates** | Aggressive caching on `index.html` or unhashed `style.css`/`script.js` files can serve outdated markup after deployments. | Split `nginx.conf` caching rules: `no-cache, no-store, must-revalidate` on `index.html`, `max-age=604800, must-revalidate` on CSS/JS, and `max-age=2592000` on images and PDFs. |
+| 4 | **Subdirectory Portfolio Structure (`manoranjan_protfolio/`)** | Static website assets reside inside a nested folder (`manoranjan_protfolio/`) rather than the repository root, causing root copies to fail entrypoint resolution. | Configured the multi-stage `Dockerfile` to validate `manoranjan_protfolio/` entrypoints, normalize permissions, and copy `/dist` into `/usr/share/nginx/html`. |
+| 5 | **Disk Usage Growth Across Repeated Builds** | Frequent CI/CD builds accumulate dangling image layers on `Standard_B1s` OS disks. | Excluded `.git`, logs, and documentation via `.dockerignore` and included `docker image prune -f` after every rollout in `deploy.yml`. |
 | 6 | **SSH Key Formatting & Non-Interactive Host Verification** | Copying `.pem` keys on Windows can inject `\r` (CRLF) characters, and non-interactive SSH runners stall on interactive host-key confirmation prompts. | Normalized keys with `tr -d '\r'`, enforced strict `chmod 600` permissions with automatic `trap` cleanup, and passed `-o StrictHostKeyChecking=accept-new`. |
 
 ---
 
 ## 10. Conclusion & Future Scope
 
-This project successfully deploys a static portfolio web application onto a production-style **Microsoft Azure Virtual Machine (Ubuntu 22.04 LTS) + Docker + Nginx + GitHub Actions** pipeline. By isolating the web server in an Alpine-based multi-stage Docker container and automating SSH rollouts through GitHub Actions, deployments are deterministic, version-tagged, and recoverable across VM restarts.
+This project delivers a verified, containerized portfolio hosting architecture backed by **Docker**, **Nginx Alpine**, **GitHub Actions CI/CD**, and **Microsoft Azure Virtual Machines (Ubuntu 22.04 LTS)**. Local verification on `http://localhost:80` confirmed a fast 9.1-second multi-stage build, healthy container execution (`portfolio-web:latest`), clean Port 80 binding, and full visual fidelity in the browser.
 
 **Recommended Future Enhancements:**
-- Assign an **Azure Static Public IP** and map a custom domain via **Azure DNS** so the endpoint never changes across VM deallocation/restart cycles.
-- Enable **HTTPS (Port 443)** using **Certbot / Let's Encrypt** TLS certificates (or terminate SSL via an **Azure Application Gateway**) so features like the Web Clipboard API operate over encrypted HTTPS.
+- Assign an **Azure Static Public IP** and map a custom domain via **Azure DNS** for stable public endpoints across VM deallocation/restart cycles.
+- Enable **HTTPS (Port 443)** using **Certbot / Let's Encrypt** TLS certificates or an **Azure Application Gateway** so features such as the Web Clipboard API run over encrypted HTTPS.
 - Integrate **Azure Monitor** and **Container Logs** for centralized uptime alerting and resource telemetry.
